@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Microspot</string>
+    <string name="managesamples_title">Samples</string>
+    <string name="calibrate_title">Calibrate Sample</string>
+    <string name="scancomplete_title">Scan complete</string>
+    <string name="scan_title">Scanning...</string>
+    <string name="settings_title">Settings</string>
+    <string name="newscan_title">New scan</string>
+    <string name="presets_title">Presets</string>
+    <string name="newpreset_title">New preset</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+</resources>
