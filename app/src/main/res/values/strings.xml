@@ -9,8 +9,15 @@
     <string name="presets_title">Presets</string>
     <string name="newpreset_title">New preset</string>
 
+    <string name="presetname">Preset Name</string>
+    <string name="gridhint">Size in um</string>
+
+    <string name="patientid">Patient ID</string>
+    <string name="patientanno">Annotations</string>
+
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="presetgridsize">Grid Size</string>
 </resources>
