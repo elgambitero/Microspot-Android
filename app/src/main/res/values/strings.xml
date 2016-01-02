@@ -9,6 +9,11 @@
     <string name="presets_title">Presets</string>
     <string name="newpreset_title">New preset</string>
 
+    <string name="cal_mount">Mount the device on the Microspot, with the camera looking through
+    the microscope</string>
+    <string name="cal_how">Calibrate the sample, by moving it with the four buttons below, and then
+    adjusting the knobs in the carriage until you get a clear image</string>
+
     <string name="presetname">Preset Name</string>
     <string name="gridhint">Size in um</string>
 

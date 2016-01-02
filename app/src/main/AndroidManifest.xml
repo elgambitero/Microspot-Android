@@ -27,17 +27,18 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <!--
+
         <activity
             android:name=".Calibrate"
             android:label="@string/calibrate_title"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.CALIBRATE" />
+                <action android:name="io.github.elgambitero.microspot_android.CALIBRATE" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <!--
         <activity
             android:name=".NewScan"
             android:label="@string/newscan_title"

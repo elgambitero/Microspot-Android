@@ -1,6 +1,7 @@
 package io.github.elgambitero.microspot_android;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
@@ -22,7 +23,7 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
 
     String unimplementedlist[] = {"EX3324", "EX2204", "EX5345", "EX6543", "EX5346", "EX9877", "EX6336",
             "EX4652", "EX6325", "EX2346", "EX3632"};
-    String draweroptions[] = {"New Sample", "Manage Samples", "Manage Presets", "Settings"};
+    String draweroptions[] = {"New Sample", "Manage Samples", "Manage Presets", "Calibrate", "Settings"};
     DrawerLayout drawer;
     ListView sampleList, drawerList;
     Toolbar manage_toolbar;
@@ -106,9 +107,19 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
         switch (parent.getId()) {
             case R.id.drawer_list:
                 switch (position) {
+                    case 3:
+                        try{
+                            Class next = Class.forName(getPackageName()+".Calibrate");
+                            Intent i = new Intent(ManageSamples.this,next);
+                            startActivity(i);
+                        }catch(ClassNotFoundException e){
+                            e.printStackTrace();
+                        }
+                        break;
                     default:
                         Snackbar.make(v, "UNIMPLEMENTED FEATURE",
                                 Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                        break;
                 }
                 break;
             case R.id.sample_list:
