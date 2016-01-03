@@ -20,7 +20,14 @@
             app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
     </android.support.design.widget.AppBarLayout>
+<!--
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">-->
 
-    <include layout="@layout/content_calibrate"/>
+        <include layout="@layout/content_calibrate"/>
+
+    <!--</ScrollView>-->
 
 </LinearLayout>

@@ -17,6 +17,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import java.util.List;
+
 
 /**
  * Created by elgambitero on 02/01/16.
@@ -28,7 +30,7 @@ public class Calibrate extends AppCompatActivity implements View.OnClickListener
     FrameLayout framePreview;
     CameraPreview preview;
     ImageView nocamview;
-    Camera cam;
+    Camera mCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +45,10 @@ public class Calibrate extends AppCompatActivity implements View.OnClickListener
         super.onResume();
         initializeLayout();
 
-        cam = initializeCamera();
-        if(cam!=null){
-
-            preview = new CameraPreview(this,cam);
+        mCamera = initializeCamera();
+        if(mCamera!=null){
+            setCamFocusMode();
+            preview = new CameraPreview(this,mCamera);
             framePreview.addView(preview);
         }else{
 
@@ -78,7 +80,6 @@ public class Calibrate extends AppCompatActivity implements View.OnClickListener
 
 
 
-
     private Camera initializeCamera(){
         if(checkCameraHardware(this)){
             Camera cam;
@@ -93,15 +94,14 @@ public class Calibrate extends AppCompatActivity implements View.OnClickListener
                 }
             }
             cam = getCameraInstance(cameraId);
-            if (cam != null){
-
-            }else{
+            if (cam == null){
                 Log.println(1, "Err", "NO CAMERA INSTANCED");
             }
             return cam;
         }else{
             return null;
         }
+
     }
 
     /** Check if this device has a camera */
@@ -137,5 +137,25 @@ public class Calibrate extends AppCompatActivity implements View.OnClickListener
                         Snackbar.LENGTH_LONG).setAction("Action", null).show();
         }
     }
+
+    private void setCamFocusMode(){
+
+        if(null == mCamera) {
+            return;
+        }
+
+    /* Set Auto focus */
+        Camera.Parameters parameters = mCamera.getParameters();
+        List<String>    focusModes = parameters.getSupportedFocusModes();
+        if(focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)){
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        } else
+        if(focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)){
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
+
+        mCamera.setParameters(parameters);
+    }
+
 
 }

@@ -76,6 +76,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         previewsize = previewsizes.get((int) getResources().getConfiguration().screenLayout &
                 Configuration.SCREENLAYOUT_SIZE_MASK);
         mCamera.getParameters().setPreviewSize(previewsize.width,previewsize.height);
+        mCamera.setDisplayOrientation(90);
 
 
         // start preview with new settings

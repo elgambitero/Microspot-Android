@@ -20,7 +20,7 @@
     <string name="patientid">Patient ID</string>
     <string name="patientanno">Annotations</string>
 
-    <string name="beginscan">BEGIN SCAN</string>
+    <string name="beginscan">Calibrate for scan</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
