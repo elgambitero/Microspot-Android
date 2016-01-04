@@ -2,13 +2,14 @@ package io.github.elgambitero.microspot_android;
 
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
@@ -21,16 +22,20 @@ import android.widget.ListView;
 /**
  * Created by elgambitero on 30/12/15.
  */
-public class ManageSamples extends AppCompatActivity implements ListView.OnItemClickListener, View.OnClickListener{
+public class ManageSamples extends AppCompatActivity implements ListView.OnItemClickListener,
+        View.OnClickListener{
 
     String unimplementedlist[] = {"EX3324", "EX2204", "EX5345", "EX6543", "EX5346", "EX9877", "EX6336",
-            "EX4652", "EX6325", "EX2346", "EX3632"};
+            "EX4652", "EX6325", "EX2346", "EX3632", "EX6325", "EX2346", "EX3632", "EX6325",
+            "EX2346", "EX3632", "EX6325", "EX2346", "EX3632"};
     String draweroptions[] = {"Manage Presets", "Calibrate", "Settings"};
     DrawerLayout drawer;
-    ListView sampleList, drawerList;
+    RecyclerView sampleList;
+    ListView drawerList;
     Toolbar manage_toolbar;
     ActionBarDrawerToggle drawerToggle;
     FloatingActionButton newScanFab;
+    FabScrollBehavior fabScrollBehavior;
 
 
     @Override
@@ -47,12 +52,18 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
     private void initializeVars() {
 
         drawer = (DrawerLayout) findViewById(R.id.manager_drawer);
-        sampleList = (ListView) findViewById(R.id.sample_list);
+        sampleList = (RecyclerView) findViewById(R.id.sample_list);
         drawerList = (ListView) findViewById(R.id.drawer_list);
         manage_toolbar = (Toolbar) findViewById(R.id.managetoolbar);
+
         newScanFab = (FloatingActionButton)findViewById(R.id.newScanFab);
         newScanFab.setBackgroundTintList(getResources().getColorStateList(R.color.fab));
         newScanFab.setOnClickListener(this);
+
+        CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams)
+                newScanFab.getLayoutParams();
+        p.setBehavior(fabScrollBehavior);
+        newScanFab.setLayoutParams(p);
     }
 
     private void setAdapters() {
@@ -61,7 +72,24 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
         drawerList.setOnItemClickListener(this);
         sampleList.setAdapter(new ArrayAdapter<String>(this,
                 android.R.layout.simple_expandable_list_item_1, unimplementedlist));
-        sampleList.setOnItemClickListener(this);
+        sampleList.setOnClickListener(new RecyclerView.OnItemTouchListener(){
+            switch () {
+                case 1:
+                    try{
+                        Class next = Class.forName(getPackageName()+".Calibrate");
+                        Intent i = new Intent(ManageSamples.this,next);
+                        startActivity(i);
+                    }catch(ClassNotFoundException e){
+                        e.printStackTrace();
+                    }
+                    break;
+                default:
+                    Snackbar.make(v, "UNIMPLEMENTED FEATURE",
+                            Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    break;
+            }
+
+        });
 
 
     }
