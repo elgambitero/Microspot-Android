@@ -9,6 +9,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
@@ -36,29 +37,36 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
     ActionBarDrawerToggle drawerToggle;
     FloatingActionButton newScanFab;
     FabScrollBehavior fabScrollBehavior;
+    CoordinatorLayout coordinatorLayout;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_samples);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
-        initializeVars();
+
+        initStatusBar();
+        initLayout();
+        initToolbar();
+        initFab();
         setAdapters();
-        setToolbarFunctions();
+
+
+
     }
 
-    private void initializeVars() {
+    private void initStatusBar(){
 
-        drawer = (DrawerLayout) findViewById(R.id.manager_drawer);
-        sampleList = (RecyclerView) findViewById(R.id.sample_list);
-        drawerList = (ListView) findViewById(R.id.drawer_list);
-        manage_toolbar = (Toolbar) findViewById(R.id.managetoolbar);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
 
+    }
+
+    private void initFab(){
         newScanFab = (FloatingActionButton)findViewById(R.id.newScanFab);
         newScanFab.setBackgroundTintList(getResources().getColorStateList(R.color.fab));
         newScanFab.setOnClickListener(this);
+        fabScrollBehavior = new FabScrollBehavior(this,null);
 
         CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams)
                 newScanFab.getLayoutParams();
@@ -66,31 +74,36 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
         newScanFab.setLayoutParams(p);
     }
 
+    private void initToolbar(){
+        manage_toolbar = (Toolbar) findViewById(R.id.managetoolbar);
+        setToolbarFunctions();
+    }
+
+    private void initLayout() {
+
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.manage_coordinator);
+        drawer = (DrawerLayout) findViewById(R.id.manager_drawer);
+        sampleList = (RecyclerView) findViewById(R.id.sample_list);
+        drawerList = (ListView) findViewById(R.id.drawer_list);
+
+
+
+    }
+
     private void setAdapters() {
         drawerList.setAdapter(new ArrayAdapter<String>(this,
                 R.layout.drawer_list_item, draweroptions));
         drawerList.setOnItemClickListener(this);
-        sampleList.setAdapter(new ArrayAdapter<String>(this,
-                android.R.layout.simple_expandable_list_item_1, unimplementedlist));
-        sampleList.setOnClickListener(new RecyclerView.OnItemTouchListener(){
-            switch () {
-                case 1:
-                    try{
-                        Class next = Class.forName(getPackageName()+".Calibrate");
-                        Intent i = new Intent(ManageSamples.this,next);
-                        startActivity(i);
-                    }catch(ClassNotFoundException e){
-                        e.printStackTrace();
-                    }
-                    break;
-                default:
-                    Snackbar.make(v, "UNIMPLEMENTED FEATURE",
-                            Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                    break;
-            }
 
-        });
-
+        // Lookup the recyclerview in activity layout
+        RecyclerView sampleList = (RecyclerView) findViewById(R.id.sample_list);
+        // Create adapter passing in the sample user data
+        SampleAdapter adapter = new SampleAdapter(Sample.createSamplesList(unimplementedlist));
+        // Attach the adapter to the recyclerview to populate items
+        sampleList.setAdapter(adapter);
+        // Set layout manager to position the items
+        sampleList.setLayoutManager(new LinearLayoutManager(this));
+        // That's all!
 
     }
 
@@ -155,13 +168,7 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
                         break;
                 }
                 break;
-            case R.id.sample_list:
-                switch (position) {
-                    default:
-                        Snackbar.make(v, "THIS LIST IS A PLACEHOLDER",
-                                Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                }
-                break;
+
         }
     }
 
@@ -181,4 +188,6 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
                 break;
         }
     }
+
+
 }
