@@ -36,7 +36,7 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
     Toolbar manage_toolbar;
     ActionBarDrawerToggle drawerToggle;
     FloatingActionButton newScanFab;
-    FabScrollBehavior fabScrollBehavior;
+    ManagerFabBehavior managerFabBehavior;
     CoordinatorLayout coordinatorLayout;
 
 
@@ -66,11 +66,11 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
         newScanFab = (FloatingActionButton)findViewById(R.id.newScanFab);
         newScanFab.setBackgroundTintList(getResources().getColorStateList(R.color.fab));
         newScanFab.setOnClickListener(this);
-        fabScrollBehavior = new FabScrollBehavior(this,null);
+        managerFabBehavior = new ManagerFabBehavior(this,null);
 
         CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams)
                 newScanFab.getLayoutParams();
-        p.setBehavior(fabScrollBehavior);
+        p.setBehavior(managerFabBehavior);
         newScanFab.setLayoutParams(p);
     }
 
