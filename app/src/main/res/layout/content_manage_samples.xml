@@ -41,7 +41,6 @@
         android:layout_margin="@dimen/fab_margin"
         android:src="@android:drawable/ic_input_add"
         android:tint="@color/colorAccent"
-        app:layout_behavior="io.github.elgambitero.microspot_android.ManagerFabBehavior"
         />
 
 

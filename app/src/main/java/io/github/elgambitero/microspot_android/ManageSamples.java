@@ -20,15 +20,17 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.io.IOException;
+import java.util.List;
+
+import static android.support.v4.app.ActivityCompat.startActivity;
+
 /**
  * Created by elgambitero on 30/12/15.
  */
 public class ManageSamples extends AppCompatActivity implements ListView.OnItemClickListener,
         View.OnClickListener{
 
-    String unimplementedlist[] = {"EX3324", "EX2204", "EX5345", "EX6543", "EX5346", "EX9877", "EX6336",
-            "EX4652", "EX6325", "EX2346", "EX3632", "EX6325", "EX2346", "EX3632", "EX6325",
-            "EX2346", "EX3632", "EX6325", "EX2346", "EX3632"};
     String draweroptions[] = {"Manage Presets", "Calibrate", "Settings"};
     DrawerLayout drawer;
     RecyclerView sampleList;
@@ -38,7 +40,8 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
     FloatingActionButton newScanFab;
     ManagerFabBehavior managerFabBehavior;
     CoordinatorLayout coordinatorLayout;
-
+    SampleAdapter sampleAdapter;
+    List<Sample> samples;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,12 +98,11 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
                 R.layout.drawer_list_item, draweroptions));
         drawerList.setOnItemClickListener(this);
 
-        // Lookup the recyclerview in activity layout
-        RecyclerView sampleList = (RecyclerView) findViewById(R.id.sample_list);
+        samples = Sample.createSamplesList(this);
         // Create adapter passing in the sample user data
-        SampleAdapter adapter = new SampleAdapter(Sample.createSamplesList(unimplementedlist));
+        sampleAdapter = new SampleAdapter(samples,this);
         // Attach the adapter to the recyclerview to populate items
-        sampleList.setAdapter(adapter);
+        sampleList.setAdapter(sampleAdapter);
         // Set layout manager to position the items
         sampleList.setLayoutManager(new LinearLayoutManager(this));
         // That's all!
