@@ -4,7 +4,9 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/manage_coordinator"
     android:fitsSystemWindows="true">
+
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -20,11 +22,16 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/sample_list">
-    </ListView>
+
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/sample_list"
+            android:paddingTop="?attr/actionBarSize"
+            android:clipToPadding="false">
+        </android.support.v7.widget.RecyclerView>
+
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/newScanFab"
@@ -32,7 +39,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_input_add"/>
+        android:src="@android:drawable/ic_input_add"
+        android:tint="@color/colorAccent"
+        app:layout_behavior="io.github.elgambitero.microspot_android.ManagerFabBehavior"
+        />
 
 
 </android.support.design.widget.CoordinatorLayout>
