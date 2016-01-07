@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -36,6 +37,28 @@ public class Sample {
         return _Title;
     }
 
+    public String getId() {
+        return _Id;
+    }
+    public String getAnno() {
+        return _annotations;
+    }
+
+    public String getShotsX() {
+        return _shotsX;
+    }
+
+    public String getShotsY() {
+        return _shotsY;
+    }
+
+    public String getGridSize() {
+        return _gridSize;
+    }
+
+
+
+
     public File linkedFile;
 
     public static List<Sample> createSamplesList(Context context) {
@@ -52,12 +75,13 @@ public class Sample {
     }
 
     //This method fills this class instance data about the particular sample.
-    public void getScanInfo(File scan,Context context) throws IOException {
+    public void getScanInfo(Context context) throws IOException {
         //First unzip the info.txt and store it in a temp folder
         deleteTempFile(context);
-        OutputStream out = new FileOutputStream(
-                context.getExternalFilesDir(String.valueOf(R.string.temp_info_file)));
-        FileInputStream fin = new FileInputStream(scan.getPath());
+        File tempFile = new File(context.getExternalFilesDir("/temp").
+                        getPath()+"/info.txt");
+        OutputStream out = new FileOutputStream(tempFile);
+        FileInputStream fin = new FileInputStream(linkedFile.getPath());
         BufferedInputStream bin = new BufferedInputStream(fin);
         ZipInputStream zin = new ZipInputStream(bin);
         ZipEntry ze = null;
@@ -73,16 +97,14 @@ public class Sample {
             }
         }
         String aux;
-        FileInputStream infoFIS = new FileInputStream(context.getExternalFilesDir(
-                String.valueOf(R.string.temp_info_file)).getPath());
+        FileInputStream infoFIS = new FileInputStream(tempFile);
         DataInputStream infoDIS = new  DataInputStream(infoFIS);
         InputStreamReader infoISR = new InputStreamReader(infoDIS);
         BufferedReader infoBR = new BufferedReader(infoISR);
         aux = infoBR.readLine();
         while(aux != null){
-            aux = infoBR.readLine();
             int divider = aux.indexOf(" = ");
-            String field = aux.substring(0,divider);
+            String field = aux.substring(0, divider);
             String content = aux.substring(divider+3,aux.length());
             switch(field){
                 case "PatientID":
@@ -101,6 +123,7 @@ public class Sample {
                     _gridSize=content;
                     break;
             }
+            aux = infoBR.readLine();
             infoBR.close();
             infoDIS.close();
             infoFIS.close();
@@ -109,10 +132,14 @@ public class Sample {
 
     }
 
-    public boolean deleteTempFile(Context context){
+    public boolean deleteTempFile(Context context){ //more like resetTempFile
         File file = new File(
-                context.getExternalFilesDir(String.valueOf(R.string.temp_info_file)).getPath());
+                String.valueOf(context.
+                        getExternalFilesDir(String.valueOf(R.string.temp_info_file))));
         boolean deleted = file.delete();
+        file = new File(
+                String.valueOf(context.
+                        getExternalFilesDir(String.valueOf(R.string.temp_info_file))));
         return deleted;
     }
 }
