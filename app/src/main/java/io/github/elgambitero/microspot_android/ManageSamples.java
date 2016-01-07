@@ -95,10 +95,8 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
                 R.layout.drawer_list_item, draweroptions));
         drawerList.setOnItemClickListener(this);
 
-        // Lookup the recyclerview in activity layout
-        RecyclerView sampleList = (RecyclerView) findViewById(R.id.sample_list);
         // Create adapter passing in the sample user data
-        SampleAdapter adapter = new SampleAdapter(Sample.createSamplesList(unimplementedlist));
+        SampleAdapter adapter = new SampleAdapter(Sample.createSamplesList(this));
         // Attach the adapter to the recyclerview to populate items
         sampleList.setAdapter(adapter);
         // Set layout manager to position the items
