@@ -26,9 +26,6 @@ import android.widget.ListView;
 public class ManageSamples extends AppCompatActivity implements ListView.OnItemClickListener,
         View.OnClickListener{
 
-    String unimplementedlist[] = {"EX3324", "EX2204", "EX5345", "EX6543", "EX5346", "EX9877", "EX6336",
-            "EX4652", "EX6325", "EX2346", "EX3632", "EX6325", "EX2346", "EX3632", "EX6325",
-            "EX2346", "EX3632", "EX6325", "EX2346", "EX3632"};
     String draweroptions[] = {"Manage Presets", "Calibrate", "Settings"};
     DrawerLayout drawer;
     RecyclerView sampleList;
@@ -166,7 +163,6 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
                         break;
                 }
                 break;
-
         }
     }
 

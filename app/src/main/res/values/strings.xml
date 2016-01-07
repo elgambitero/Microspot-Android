@@ -28,4 +28,6 @@
 
     <string name="action_settings">Settings</string>
     <string name="presetgridsize">Grid Size</string>
+
+    <string name="temp_info_file">/temp/info.txt</string>
 </resources>
