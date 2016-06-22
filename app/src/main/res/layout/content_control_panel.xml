@@ -74,14 +74,14 @@
                     android:layout_height="wrap_content"
                     android:text="@string/x_minus"
                     android:id="@+id/X_minus"
-                    android android:layout_weight="50"/>
+                    android:layout_weight="50"/>
 
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/x_plus"
                     android:id="@+id/X_plus"
-                    android android:layout_weight="50"/>
+                    android:layout_weight="50"/>
             </LinearLayout>
 
             <Button

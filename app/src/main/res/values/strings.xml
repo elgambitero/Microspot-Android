@@ -2,6 +2,7 @@
     <string name="app_name">Microspot</string>
     <string name="managesamples_title">Samples</string>
     <string name="calibrate_title">Calibrate Sample</string>
+    <string name="controlpanel_title">Control Panel</string>
     <string name="scancomplete_title">Scan complete</string>
     <string name="scan_title">Scanning...</string>
     <string name="settings_title">Settings</string>
