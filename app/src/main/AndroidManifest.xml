@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-feature android:name="android.hardware.camera2" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature android:name="android.hardware.usb.host" />
 
     <application
         android:allowBackup="true"
@@ -36,15 +37,22 @@
         </activity>
 
         <activity
-            android:name=".Calibrate"
-            android:label="@string/calibrate_title"
+            android:name=".ControlPanel"
+            android:label="@string/controlpanel_title"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="io.github.elgambitero.microspot_android.CALIBRATE" />
+                <action android:name="io.github.elgambitero.microspot_android.CONTROLPANEL" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
         </activity>
+
         <activity
             android:name=".NewScan"
             android:label="@string/newscan_title"
@@ -63,6 +71,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+
         <!--
         <activity
             android:name=".Scan"
