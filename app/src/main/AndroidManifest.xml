@@ -52,16 +52,7 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-        <activity
-            android:name=".Calibrate"
-            android:label="@string/controlpanel_title"
-            android:theme="@style/AppTheme.NoActionBar">
-        <intent-filter>
-            <action android:name="io.github.elgambitero.microspot_android.CALIBRATE" />
 
-            <category android:name="android.intent.category.DEFAULT" />
-        </intent-filter>
-        </activity>
         <activity
             android:name=".NewScan"
             android:label="@string/newscan_title"
