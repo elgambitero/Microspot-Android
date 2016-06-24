@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import android.util.Log;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -65,7 +64,7 @@ public class Calibrate extends AppCompatActivity implements View.OnClickListener
         bottomLeft = (Button)findViewById(R.id.BottomLeft);
         bottomRight = (Button)findViewById(R.id.BottomRight);
         calibToolbar = (Toolbar)findViewById(R.id.calibtoolbar);
-        framePreview = (FrameLayout)findViewById(R.id.camera_preview);
+        framePreview = (FrameLayout)findViewById(R.id.camera_preview_old);
         nocamview = new ImageView(this);
 
         topLeft.setOnClickListener(this);

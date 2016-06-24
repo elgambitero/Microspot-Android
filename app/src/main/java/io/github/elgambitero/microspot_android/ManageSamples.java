@@ -31,7 +31,7 @@ import static android.support.v4.app.ActivityCompat.startActivity;
 public class ManageSamples extends AppCompatActivity implements ListView.OnItemClickListener,
         View.OnClickListener{
 
-    String draweroptions[] = {"Manage Presets", "Control Panel", "Settings"};
+    String draweroptions[] = {"Manage Presets", "Control Panel", "Calibrate", "Settings"};
     DrawerLayout drawer;
     RecyclerView sampleList;
     ListView drawerList;
@@ -158,6 +158,15 @@ public class ManageSamples extends AppCompatActivity implements ListView.OnItemC
                     case 1:
                         try{
                             Class next = Class.forName(getPackageName()+".ControlPanel");
+                            Intent i = new Intent(ManageSamples.this,next);
+                            startActivity(i);
+                        }catch(ClassNotFoundException e){
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 2:
+                        try{
+                            Class next = Class.forName(getPackageName()+".Calibrate");
                             Intent i = new Intent(ManageSamples.this,next);
                             startActivity(i);
                         }catch(ClassNotFoundException e){

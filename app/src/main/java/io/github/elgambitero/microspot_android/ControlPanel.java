@@ -36,7 +36,7 @@ import java.util.Map;
 public class ControlPanel extends AppCompatActivity implements View.OnClickListener{
 
     //Frame layout related
-    Toolbar calibToolbar;
+    Toolbar controlPanelToolbar;
     FrameLayout framePreview;
     CameraPreview preview;
     ImageView nocamview;
@@ -109,7 +109,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initializeLayout(){
-        calibToolbar = (Toolbar)findViewById(R.id.calibtoolbar);
+        controlPanelToolbar = (Toolbar)findViewById(R.id.controlpaneltoolbar);
         framePreview = (FrameLayout)findViewById(R.id.camera_preview);
         nocamview = new ImageView(this);
 
@@ -128,6 +128,8 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         startSerialButton.setOnClickListener(this);
         homeAxisButton.setOnClickListener(this);
         stopSerialButton.setOnClickListener(this);
+
+        setSupportActionBar(controlPanelToolbar);
     }
 
     private Camera initializeCamera(){
