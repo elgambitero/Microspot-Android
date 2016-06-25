@@ -1,13 +1,18 @@
 package io.github.elgambitero.microspot_android;
 
 
-import android.app.FragmentTransaction;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
+import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,10 +23,16 @@ import java.io.OutputStream;
  * Created by elgambitero on 30/12/15.
  */
 public class NewScan extends AppCompatActivity implements PatientInput.PatientInputListener,
-        ConfigScan.ConfigScanListener{
+        ConfigScan.ConfigScanListener,
+        CalibrateScan.CalibrateScanListener{
 
     Toolbar toolbar;
     OutputStream out;
+
+    //Service binding variables
+    Boolean isBound;
+    SerialService serialService;
+    private static final String TAG = "NewScan";
 
     /*========================
     Activity lifecycle Methods
@@ -34,6 +45,11 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         initializeLayout();
         setSupportActionBar(toolbar);
         out = getTempFile(true);
+
+        isBound = false;
+        Log.d(TAG, "Attempting to bind");
+        Intent i = new Intent(this, SerialService.class);
+        isBound = getApplicationContext().bindService(i, serialConnection, Context.BIND_AUTO_CREATE);
 
     }
 
@@ -71,8 +87,15 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
                 fragTran.replace(R.id.newScanSteps,step2);
                 break;
             case 2:
+                serialService.homeAxis();
+                serialService.homeAxis();
+                serialService.axisTo(25.0,7.5,2000.0);
                 CalibrateScan step3 = new CalibrateScan();
                 fragTran.replace(R.id.newScanSteps,step3);
+                break;
+            case 3:
+                Scanning step4 = new Scanning();
+                fragTran.replace(R.id.newScanSteps,step4);
         }
         fragTran.addToBackStack(null);
         fragTran.commit();
@@ -138,5 +161,41 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         }
         goToStep(2);
     }
+
+    @Override
+    public void setFocusAndNext(){
+        goToStep(3);
+    }
+
+
+    /*===============================
+    * Service connection declarations
+      ===============================*/
+
+    private ServiceConnection serialConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service){
+            SerialService.SerialBinder binder = (SerialService.SerialBinder) service;
+            serialService = binder.getService();
+            Log.d(TAG, "Attempted to bind.");
+            if(serialService != null) {
+                Log.d(TAG, "Service is bound successfully!");
+                try {
+                    serialService.initializeSerial();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }else{
+                Log.d(TAG, "Service binding error");
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name){
+            isBound = false;
+        }
+    };
+
 
 }
