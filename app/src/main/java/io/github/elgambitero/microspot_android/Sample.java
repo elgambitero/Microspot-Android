@@ -20,10 +20,12 @@ import java.util.zip.ZipInputStream;
 
 /**
  * Created by CodePath
- * Adapted by elgambitero on 05/01/16.
+ * Adapted by Jaime García Villena on 05/01/16.
  */
 public class Sample {
-    private String _Title,_Id, _annotations, _shotsX, _shotsY, _gridSize;
+    private String _Title,_Id, _annotations,
+    private Double[] _intervals = new Double[2];
+    private Integer[] _shots = new Integer[2];
 
 
     public Sample(String filename, Context context){
@@ -33,10 +35,14 @@ public class Sample {
                 filename.length()-4);
     }
 
+    /*===========================
+    * Sample info getting methods
+      ===========================*/
+
+
     public String getTitle() {
         return _Title;
     }
-
     public String getId() {
         return _Id;
     }
@@ -44,18 +50,29 @@ public class Sample {
         return _annotations;
     }
 
-    public String getShotsX() {
-        return _shotsX;
+    public Integer[] getShots(){
+        return _shots;
     }
 
-    public String getShotsY() {
-        return _shotsY;
+    public Double[] getIntervals(){
+
     }
 
-    public String getGridSize() {
-        return _gridSize;
+
+  /*===========================
+  * Sample info setting methods
+    ===========================*/
+
+    public void setTitle(String s) {
+        _Title = s;
     }
 
+    public void setId(String s) {
+        _Id = s;
+    }
+    public void setAnno(String s) {
+        _annotations = s;
+    }
 
 
 
@@ -113,15 +130,17 @@ public class Sample {
                 case "annotations":
                     _annotations=content;
                     break;
+                case "intervalX":
+                    _intervals[0]=content;
+                    break;
+                case "intervalY":
+                    _intervals[0]=content;
+                    break;
                 case "shotsX":
-                    _shotsX=content;
+                    _shots[0]=content;
                     break;
                 case "shotsY":
-                    _shotsY=content;
-                    break;
-                case "gridSize":
-                    _gridSize=content;
-                    break;
+                    _shots[1]=content;
             }
             aux = infoBR.readLine();
             infoBR.close();

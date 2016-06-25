@@ -242,14 +242,14 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
             serialService = binder.getService();
             Log.d(TAG, "Attempted to bind.");
             if(serialService != null) {
-                Log.d(TAG, "Service is bonded successfully!");
+                Log.d(TAG, "Service is bound successfully!");
                 try {
                     serialService.initializeSerial();
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }else{
-                Log.d(TAG, "Service bounding error");
+                Log.d(TAG, "Service binding error");
             }
         }
 
