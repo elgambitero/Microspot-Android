@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -33,7 +32,7 @@ public class CalibrateScan extends Fragment implements View.OnClickListener{
     Button startButton;
 
     public interface CalibrateScanListener{
-
+        void setFocusAndNext();
     }
 
     @Override
@@ -142,6 +141,6 @@ public class CalibrateScan extends Fragment implements View.OnClickListener{
 
     @Override
     public void onClick(View view) {
-
+        newScanListener.setFocusAndNext();
     }
 }

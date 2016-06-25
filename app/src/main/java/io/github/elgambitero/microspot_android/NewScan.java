@@ -24,10 +24,14 @@ import java.io.OutputStream;
  */
 public class NewScan extends AppCompatActivity implements PatientInput.PatientInputListener,
         ConfigScan.ConfigScanListener,
-        CalibrateScan.CalibrateScanListener{
+        CalibrateScan.CalibrateScanListener,
+        Scanning.ScanningListener{
 
     Toolbar toolbar;
     OutputStream out;
+
+    private Double[] _intervals = new Double[2];
+    private Integer[] _shots = new Integer[2];
 
     //Service binding variables
     Boolean isBound;
@@ -133,6 +137,10 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     }
 
 
+    /*===============================
+    Fragment interface implementation
+    =================================*/
+
     @Override
     public void writePatientDataAndNext(String id, String annotation) {
         try {
@@ -146,6 +154,10 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
 
     @Override
     public void writeGridDataAndNext(Double intervalX, Double intervalY, Integer shotsX, Integer shotsY){
+        _intervals[0] = intervalX;
+        _intervals[1] = intervalY;
+        _shots[0] = shotsX;
+        _shots[1] = shotsY;
         try {
             out.write(("intervalX = " + intervalX.toString() + "\r\n").getBytes());
             out.write(("intervalY = " + intervalY.toString() + "\r\n").getBytes());
@@ -166,7 +178,37 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     public void setFocusAndNext(){
         goToStep(3);
     }
+    
 
+    @Override
+    public Double[] getXCoordinates() {
+        Double[] xCoord;
+        xCoord = new Double[_shots[0]];
+        for(int i = 0; i <_shots[0]; i++){
+            xCoord[i]=25.0 -(_intervals[0]*_shots[0]/2) + i*_intervals[0];
+        }
+        return xCoord;
+    }
+
+    @Override
+    public Double[] getYCoordinates() {
+        Double[] yCoord;
+        yCoord = new Double[_shots[1]];
+        for(int i = 0; i <_shots[1]; i++){
+            yCoord[i]=25.0 -(_intervals[1]*_shots[1]/2) + i*_intervals[1];
+        }
+        return yCoord;
+    }
+
+    @Override
+    public void makePhoto() {
+
+    }
+
+    @Override
+    public void nextPosition() {
+
+    }
 
     /*===============================
     * Service connection declarations
@@ -196,6 +238,5 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
             isBound = false;
         }
     };
-
 
 }

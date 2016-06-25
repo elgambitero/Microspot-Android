@@ -46,5 +46,7 @@
     <string name="y_axis">Y axis</string>
     <string name="gridDefaultsTo">If left blank, these values default to the standard sample scanning grid</string>
     <string name="scan_sample">Scan sample</string>
+    <string name="scanning_sample">Scanning sample...</string>
+    <string name="do_not_touch">DO NOT TOUCH THE MICROSPOT DEVICE DURING THE SCAN</string>
 
 </resources>
