@@ -1,16 +1,14 @@
 package io.github.elgambitero.microspot_android;
 
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
+
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -19,15 +17,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-
-import com.felhr.usbserial.UsbSerialDevice;
-import com.felhr.usbserial.UsbSerialInterface;
+import android.widget.Toast;
 
 
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import io.github.elgambitero.microspot_android.SerialService.SerialBinder;
+
 
 /**
  * Created by Jaime García Villena "garciavillena.jaime@gmail.com" on 6/21/16.
@@ -51,42 +47,28 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     Button homeAxisButton;
     Button stopSerialButton;
 
-    //Serial related
+    //Service binding variables
+    Boolean isBound;
+    SerialService serialService;
 
-    public final String ACTION_USB_PERMISSION = "com.hariharan.arduinousb.USB_PERMISSION";
-
-    UsbDevice device;
-    UsbDeviceConnection usbConnection;
-    UsbManager usbManager;
-    UsbSerialDevice serial;
+    //debugging variables
+    private static final String TAG = "ControlPanel";
 
 
-    UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
-        @Override
-        public void onReceivedData(byte[] arg0) {
-            String data;
-            try {
-                data = new String(arg0, "UTF-8");
-                data.concat("/r/n");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-
-
-        }
-    };
+    /*==================
+    * Activity lifecycle
+      ==================*/
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control_panel);
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_USB_PERMISSION);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        registerReceiver(broadcastReceiver, filter);
+        isBound = false;
+        Log.d(TAG, "Attempting to bind");
+        Intent i = new Intent(this, SerialService.class);
+        //startService(i);
+        getApplicationContext().bindService(i, serialConnection, Context.BIND_AUTO_CREATE);
     }
 
 
@@ -106,6 +88,8 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
             nocamview.setImageResource(R.drawable.errorsign);
             framePreview.addView(nocamview);
         }
+
+
     }
 
     private void initializeLayout(){
@@ -130,6 +114,13 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         stopSerialButton.setOnClickListener(this);
 
         setSupportActionBar(controlPanelToolbar);
+    }
+
+    @Override
+    protected void onDestroy() {
+        unbindService(serialConnection);
+        super.onDestroy();
+
     }
 
     private Camera initializeCamera(){
@@ -200,39 +191,6 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
 
 
 
-    public void initializeSerial() throws InterruptedException {
-
-        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-
-        HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
-        if(!usbDevices.isEmpty())
-        {
-            boolean keep = true;
-            for(Map.Entry<String, UsbDevice> entry : usbDevices.entrySet())
-            {
-                device = entry.getValue();
-                int deviceVID = device.getVendorId();
-                int devicePID = device.getProductId();
-                if(deviceVID != 0x1d6b || (devicePID != 0x0001 || devicePID != 0x0002 || devicePID != 0x0003))
-                {
-                    // We are supposing here there is only one device connected and it is our serial device
-                    PendingIntent pi = PendingIntent.getBroadcast(this, 0,
-                            new Intent(ACTION_USB_PERMISSION), 0);
-                    usbManager.requestPermission(device, pi);
-                    keep = false;
-                }
-                else
-                {
-                    usbConnection = null;
-                    device = null;
-                }
-
-                if(!keep)
-                    break;
-            }
-        }
-
-    }
 
     @Override
     public void onClick(View v) {
@@ -242,71 +200,66 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
                         Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 break;
             case R.id.start_serial:
-                try {
-                    initializeSerial();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if(!isBound) {
+                    try {
+                        serialService.initializeSerial();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(), "Couldn't connect to MicroSpot", Toast.LENGTH_LONG).show();
+                    }
                 }
                 break;
             case R.id.home_axis:
-                serial.write("$h\r\n".getBytes());
+                serialService.homeAxis();
                 break;
             case R.id.stop_serial:
-                serial.close();
+                try {
+                    serialService.close();
+                    Toast.makeText(getApplicationContext(), "MicroSpot disconnected", Toast.LENGTH_LONG).show();
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "MicroSpot is already disconnected", Toast.LENGTH_LONG).show();
+                }
                 break;
             case R.id.Y_minus:
-                serial.write("G91\r\n".getBytes());
-                serial.write("g0 y-10\r\n".getBytes());
+                serialService.moveAxis("Y",-10.0,2000.0);
                 break;
             case R.id.Y_plus:
-                serial.write("g91\r\n".getBytes());
-                serial.write("g0 y10\r\n".getBytes());
+                serialService.moveAxis("Y",10.0,2000.0);
                 break;
             case R.id.X_minus:
-                serial.write("g91\r\n".getBytes());
-                serial.write("g0 x-10\r\n".getBytes());
+                serialService.moveAxis("X",-10.0,2000.0);
                 break;
             case R.id.X_plus:
-                serial.write("g91\r\n".getBytes());
-                serial.write("g0 x10\r\n".getBytes());
-                break;
+                serialService.moveAxis("X",10.0,2000.0);
+            break;
         }
     }
 
-    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
+
+    /*===============================
+    * Service connection declarations
+      ===============================*/
+
+    private ServiceConnection serialConnection = new ServiceConnection() {
+
         @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
-                boolean granted =
-                        intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
-                if (granted) {
-                    usbConnection = usbManager.openDevice(device);
-                    serial = UsbSerialDevice.createUsbSerialDevice(device, usbConnection);
-                    if (serial != null) {
-                        if (serial.open()) { //Set Serial Connection Parameters.
-                            serial.setBaudRate(115200);
-                            serial.setDataBits(UsbSerialInterface.DATA_BITS_8);
-                            serial.setStopBits(UsbSerialInterface.STOP_BITS_1);
-                            serial.setParity(UsbSerialInterface.PARITY_NONE);
-                            serial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
-                            serial.read(mCallback); //
-
-
-                        } else {
-                            Log.d("SERIAL", "PORT NOT OPEN");
-                        }
-                    } else {
-                        Log.d("SERIAL", "PORT IS NULL");
-                    }
-                } else {
-                    Log.d("SERIAL", "PERM NOT GRANTED");
-                }
-            } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)) {
-                onClick(startSerialButton);
-            } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
-                onClick(stopSerialButton);
+        public void onServiceConnected(ComponentName name, IBinder service){
+            SerialBinder binder = (SerialBinder) service;
+            serialService = binder.getService();
+            Log.d(TAG, "Attempted to bind.");
+            if(serialService != null) {
+                isBound = true;
+                Log.d(TAG, "Service is bonded successfully!");
+            }else{
+                Log.d(TAG, "Service bounding error");
             }
-        };
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name){
+            isBound = false;
+        }
     };
 
 }
