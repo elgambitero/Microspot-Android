@@ -11,15 +11,17 @@ import android.view.WindowManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
  * Created by elgambitero on 30/12/15.
  */
-public class NewScan extends AppCompatActivity implements PatientInput.PatientInputListener{
+public class NewScan extends AppCompatActivity implements PatientInput.PatientInputListener,
+        ConfigScan.ConfigScanListener{
 
     Toolbar toolbar;
-
+    OutputStream out;
 
     /*========================
     Activity lifecycle Methods
@@ -31,6 +33,7 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         setContentView(R.layout.newscan);
         initializeLayout();
         setSupportActionBar(toolbar);
+        out = getTempFile(true);
 
     }
 
@@ -60,9 +63,16 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         fragTran = fragmentManager.beginTransaction();
         switch (step) {
             case 0:
-                PatientInput fragment = new PatientInput();
-                fragTran.replace(R.id.newScanSteps, fragment);
+                PatientInput step1 = new PatientInput();
+                fragTran.replace(R.id.newScanSteps, step1);
                 break;
+            case 1:
+                ConfigScan step2 = new ConfigScan();
+                fragTran.replace(R.id.newScanSteps,step2);
+                break;
+            case 2:
+                CalibrateScan step3 = new CalibrateScan();
+                fragTran.replace(R.id.newScanSteps,step3);
         }
         fragTran.addToBackStack(null);
         fragTran.commit();
@@ -101,15 +111,32 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
 
 
     @Override
-    public void getPatientData(String id, String annotation) {
-        OutputStream out = getTempFile(true);
+    public void writePatientDataAndNext(String id, String annotation) {
         try {
             out.write(("PatientId = " + id + "\r\n").getBytes());
             out.write(("annotations = " + annotation + "\r\n").getBytes());
         }catch (Exception e) {
             e.printStackTrace();
         }
+        goToStep(1);
     }
 
+    @Override
+    public void writeGridDataAndNext(Double intervalX, Double intervalY, Integer shotsX, Integer shotsY){
+        try {
+            out.write(("intervalX = " + intervalX.toString() + "\r\n").getBytes());
+            out.write(("intervalY = " + intervalY.toString() + "\r\n").getBytes());
+            out.write(("shotsX = " + shotsX.toString() + "\r\n").getBytes());
+            out.write(("shotsY = " + shotsY.toString() + "\r\n").getBytes());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        goToStep(2);
+    }
 
 }

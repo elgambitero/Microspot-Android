@@ -1,7 +1,5 @@
 package io.github.elgambitero.microspot_android;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -23,7 +21,7 @@ public class PatientInput extends android.support.v4.app.Fragment implements Vie
     PatientInputListener newScanListener;
 
     public interface PatientInputListener{
-        void getPatientData(String id, String annotation);
+        void writePatientDataAndNext(String id, String annotation);
     }
 
     @Override
@@ -58,7 +56,7 @@ public class PatientInput extends android.support.v4.app.Fragment implements Vie
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.configscan:
-                newScanListener.getPatientData(patientId.getText().toString(),annotation.getText().toString());
+                newScanListener.writePatientDataAndNext(patientId.getText().toString(),annotation.getText().toString());
         }
     }
 }

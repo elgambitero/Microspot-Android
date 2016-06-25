@@ -40,4 +40,11 @@
     <string name="x_plus">X+</string>
     <string name="y_minus">Y-</string>
     <string name="stop_serial">Stop</string>
+    <string name="interval_x_and_y_in_mm">Enter the interval between shots along X and Y, in mm</string>
+    <string name="shots_x_and_y_axis">Enter how many shots do you want along X and Y axis</string>
+    <string name="x_axis">X axis</string>
+    <string name="y_axis">Y axis</string>
+    <string name="gridDefaultsTo">If left blank, these values default to the standard sample scanning grid</string>
+    <string name="scan_sample">Scan sample</string>
+
 </resources>
