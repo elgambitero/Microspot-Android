@@ -23,7 +23,7 @@ import java.util.zip.ZipInputStream;
  * Adapted by Jaime García Villena on 05/01/16.
  */
 public class Sample {
-    private String _Title,_Id, _annotations,
+    private String _Title, _Id, _annotations;
     private Double[] _intervals = new Double[2];
     private Integer[] _shots = new Integer[2];
 
@@ -55,7 +55,7 @@ public class Sample {
     }
 
     public Double[] getIntervals(){
-
+        return _intervals;
     }
 
 
@@ -130,17 +130,39 @@ public class Sample {
                 case "annotations":
                     _annotations=content;
                     break;
-                case "intervalX":
-                    _intervals[0]=content;
+                default:
+                    Double contentDouble = 0.0;
+                    try {
+                        contentDouble = Double.parseDouble(content);
+                    }catch (NumberFormatException e){
+                        e.printStackTrace();
+                        contentDouble = 0.0;
+                    }
+                    switch(field) {
+                        case "intervalX":
+                            _intervals[0] = contentDouble;
+                            break;
+                        case "intervalY":
+                            _intervals[1] = contentDouble;
+                            break;
+                        default:
+                            Integer contentInteger = 0;
+                            try{
+                                contentInteger = Integer.parseInt(content);
+                            }catch (NumberFormatException e){
+                                e.printStackTrace();
+                            }
+                            switch(field) {
+                               case "shotsX":
+                                   _shots[0] = contentInteger;
+                                   break;
+                               case "shotsY":
+                                   _shots[1] = contentInteger;
+                                   break;
+                            }
+                            break;
+                    }
                     break;
-                case "intervalY":
-                    _intervals[0]=content;
-                    break;
-                case "shotsX":
-                    _shots[0]=content;
-                    break;
-                case "shotsY":
-                    _shots[1]=content;
             }
             aux = infoBR.readLine();
             infoBR.close();

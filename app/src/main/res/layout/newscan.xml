@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/newScanSteps"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
@@ -21,6 +22,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <!--
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -33,11 +35,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/presetinput"
-        android:name="io.github.elgambitero.microspot_android.PresetInput"
-        tools:layout="@layout/presetinput">
+        android:name="io.github.elgambitero.microspot_android.ConfigScan"
+        tools:layout="@layout/scan_config_fragment">
 
     </fragment>
-
+-->
     <!--
     <include
         layout="@layout/patientinput_fragment"

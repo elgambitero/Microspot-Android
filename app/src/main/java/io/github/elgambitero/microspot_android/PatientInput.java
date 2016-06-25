@@ -15,7 +15,7 @@ import android.widget.EditText;
  * Created by Jaime García Villena "garciavillena.jaime@gmail.com" on 6/25/16.
  */
 
-public class PatientInput extends Fragment implements View.OnClickListener{
+public class PatientInput extends android.support.v4.app.Fragment implements View.OnClickListener{
 
     Button configScan;
     EditText patientId, annotation;
@@ -40,15 +40,15 @@ public class PatientInput extends Fragment implements View.OnClickListener{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.patientinput_fragment,container,false);
-        initializeLayout();
+        initializeLayout(view);
 
         return view;
     }
 
-    private void initializeLayout(){
-        configScan = (Button) configScan.findViewById();
-        patientId = (EditText) patientId.findViewById(R.id.patientID);
-        annotation = (EditText) annotation.findViewById(R.id.annotation);
+    private void initializeLayout(View view){
+        configScan = (Button)view.findViewById(R.id.configscan);
+        patientId = (EditText)view.findViewById(R.id.patientID);
+        annotation = (EditText)view.findViewById(R.id.annotation);
 
 
         configScan.setOnClickListener(this);
