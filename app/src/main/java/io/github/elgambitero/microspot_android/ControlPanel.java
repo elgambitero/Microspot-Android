@@ -67,8 +67,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         isBound = false;
         Log.d(TAG, "Attempting to bind");
         Intent i = new Intent(this, SerialService.class);
-        //startService(i);
-        getApplicationContext().bindService(i, serialConnection, Context.BIND_AUTO_CREATE);
+        isBound = getApplicationContext().bindService(i, serialConnection, Context.BIND_AUTO_CREATE);
     }
 
 
@@ -116,12 +115,6 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(controlPanelToolbar);
     }
 
-    @Override
-    protected void onDestroy() {
-        unbindService(serialConnection);
-        super.onDestroy();
-
-    }
 
     private Camera initializeCamera(){
         if(checkCameraHardware(this)){
@@ -249,8 +242,12 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
             serialService = binder.getService();
             Log.d(TAG, "Attempted to bind.");
             if(serialService != null) {
-                isBound = true;
                 Log.d(TAG, "Service is bonded successfully!");
+                try {
+                    serialService.initializeSerial();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }else{
                 Log.d(TAG, "Service bounding error");
             }
