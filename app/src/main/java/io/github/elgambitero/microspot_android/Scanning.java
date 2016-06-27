@@ -2,31 +2,22 @@ package io.github.elgambitero.microspot_android;
 
 
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.Math;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -46,18 +37,12 @@ public class Scanning extends Fragment{
 
     ScanningListener newScanListener;
 
-    Camera mCamera;
-    CameraPreview mPreview;
-    FrameLayout framePreview;
-
-    SerialService serialService;
-
 
     public interface ScanningListener{
         Double[] getXCoordinates();
         Double[] getYCoordinates();
         String getPatientId();
-        SerialService getSerialService();
+        void moveAxisRel(Double xCoord, Double yCoord, Double speed);
         void endScan();
     }
 
@@ -86,8 +71,6 @@ public class Scanning extends Fragment{
             e.printStackTrace();
         }
 
-        serialService = newScanListener.getSerialService();
-
         xCoord = newScanListener.getXCoordinates();
         yCoord = newScanListener.getYCoordinates();
 
@@ -97,12 +80,8 @@ public class Scanning extends Fragment{
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mCamera = initializeCamera();
-        if(mCamera!=null){
-            setCamFocusMode();
-            mPreview = new CameraPreview(getContext(),mCamera);
-            framePreview.addView(mPreview);
-        }
+        Log.d(TAG,"Invoke thread");
+        scanThread();
     }
 
     /*==============
@@ -115,7 +94,6 @@ public class Scanning extends Fragment{
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setMax(xCoord.length*yCoord.length);
         progressBar.setProgress(0);
-        framePreview = (FrameLayout)v.findViewById(R.id.camera_preview_scanning);
 
     }
 
@@ -123,43 +101,6 @@ public class Scanning extends Fragment{
     /*================
     Scan cycle methods
     ==================*/
-
-    private void scanProcess(){
-
-        File newDir = new File(
-                String.valueOf(getContext().
-                        getExternalFilesDir(String.valueOf(R.string.temp_scans_folder))));
-        newDir.mkdirs();
-
-
-        for(int i = 0; i< yCoord.length;i++){
-            for(int j = 0;j < xCoord.length; j++){
-               makeScan(xCoord[j],yCoord[i],j,i);
-               progressBar.setProgress(i*yCoord.length + j*xCoord.length);
-            }
-        }
-
-        zipContentsAndExit();
-
-    }
-
-    private void makeScan(Double xCoord, Double yCoord, Integer xShotNum, Integer yShotNum){
-
-        serialService.axisTo(xCoord, yCoord, 2000.0);
-        Long waitTime = (long)(Math.sqrt(Math.pow(xCoord,2)+Math.pow(yCoord,2))/(2000.0/60000));
-        try{
-            wait(waitTime+500);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        String shotName = xShotNum.toString() + "_" + yShotNum.toString() + ".jpg";
-        nextPhotoName = String.valueOf(getContext().
-                getExternalFilesDir(String.valueOf(R.string.temp_scans_folder + shotName))); //I NEED to pass this to PictureCallback
-
-
-        mCamera.takePicture(null, null, mPicture);
-
-    }
 
 
     private void zipContentsAndExit(){
@@ -169,153 +110,77 @@ public class Scanning extends Fragment{
                 .getExternalFilesDir(String.valueOf(R.string.samples_folder)))
                     + "/" + newScanListener.getPatientId() + ".zip";
         zipFileAtPath(source, destination);
-        mCamera.release();
         newScanListener.endScan();
     }
 
-    /*=====================
-    Camera handling methods
-    =======================*/
+    /*=============
+    Scanning thread
+    ===============*/
 
-    private Camera initializeCamera(){
-        if(checkCameraHardware(getContext())){
-            Camera cam;
-            int cameraId = -1;
-            int numberOfCameras = Camera.getNumberOfCameras();
-            for (int i = 0; i < numberOfCameras; i++) {
-                Camera.CameraInfo info = new Camera.CameraInfo();
-                Camera.getCameraInfo(i, info);
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    cameraId = i;
-                    break;
+    private void scanThread(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                File newDir = new File(
+                        String.valueOf(getContext().
+                                getExternalFilesDir(String.valueOf(R.string.temp_scans_folder))));
+                newDir.mkdirs();
+                Log.d(TAG,"Dirs made");
+                Double incX, incY;
+                incX = xCoord[0]-25.0;
+                incY = yCoord[0]-7.5;
+                int i = 1;
+                int j = 1;
+                do{
+                    do{
+                        try {
+                            makeScan(incX,incY,j,i);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        progressBar.setProgress(i*xCoord.length + j);
+                        if(j == xCoord.length){
+                            incX = xCoord[0]-xCoord[j-1];
+                        }else{
+                            incX = xCoord[j]-xCoord[j-1];
+                        }
+                        incY = 0.0;
+                        j++;
+                    }while(j<=xCoord.length);
+                    j = 1;
+                    if(i == yCoord.length){
+                        incY = yCoord[0]-yCoord[j-1];
+                    }else{
+                        incY = yCoord[j]-yCoord[j-1];
+                    }
+                    Log.d(TAG,"Moving with vector: (" + incX.toString() + "," + incY.toString() + ")");
+                    i++;
+                }while(i<=yCoord.length);
+
+                zipContentsAndExit();
+            }
+
+            private void makeScan(Double xCoord, Double yCoord, Integer xShotNum, Integer yShotNum) throws InterruptedException {
+
+                newScanListener.moveAxisRel(xCoord, yCoord, 2000.0);
+                Long waitTime = (long)(Math.sqrt(Math.pow(xCoord,2)+Math.pow(yCoord,2))/0.005);
+                try{
+                    Log.d(TAG,"Waiting for " + waitTime.toString() + " milliseconds");
+                    Thread.sleep(waitTime+500);
+                    Log.d(TAG,"Waited");
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
+                String shotName = xShotNum.toString() + "_" + yShotNum.toString() + ".jpg";
+                nextPhotoName = String.valueOf(getContext().
+                        getExternalFilesDir(String.valueOf(R.string.temp_scans_folder + shotName)));
+
+                //Make the photo with nextPhotoName filename!!!
+
             }
-            cam = getCameraInstance(cameraId);
-            if (cam == null){
-                Log.println(1, "Err", "NO CAMERA INSTANCED");
-            }
-            return cam;
-        }else{
-            return null;
-        }
-
+        }).start();
     }
 
-    /** Check if this device has a camera */
-    private boolean checkCameraHardware(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
-        }
-    }
-
-    public static Camera getCameraInstance(int i){
-        Camera c = null;
-        try {
-            c = Camera.open();
-            // attempt to get a Camera instance
-        }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
-        }
-        return c; // returns null if camera is unavailable
-    }
-
-    private void setCamFocusMode(){
-
-        if(null == mCamera) {
-            return;
-        }
-
-    /* Set Auto focus */
-        Camera.Parameters parameters = mCamera.getParameters();
-        List<String> focusModes = parameters.getSupportedFocusModes();
-        if(focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)){
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-        } else
-        if(focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)){
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }
-
-        mCamera.setParameters(parameters);
-    }
-
-
-    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
-
-        @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-
-            //File pictureFile = getPhotoFile();
-            File pictureFile = getOutputMediaFile(1);
-            if (pictureFile == null){
-                Log.d(TAG, "Error creating media file, check storage permissions: ");
-                return;
-            }
-            try {
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                fos.write(data);
-                fos.close();
-            } catch (FileNotFoundException e) {
-                Log.d(TAG, "File not found: " + e.getMessage());
-            } catch (IOException e) {
-                Log.d(TAG, "Error accessing file: " + e.getMessage());
-            }
-            safeToTakePicture = true;
-        }
-    };
-
-    /** Create a File for saving an image or video */
-    private static File getOutputMediaFile(int type){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d("MyCameraApp", "failed to create directory");
-                return null;
-            }
-        }
-
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile;
-        if (type == 1){
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
-        } else if(type == 2) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_"+ timeStamp + ".mp4");
-        } else {
-            return null;
-        }
-
-        return mediaFile;
-    }
-
-    private File getPhotoFile(){
-
-        File newPhoto = new File(getPhotoName());
-        try{
-            newPhoto.createNewFile();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        return newPhoto;
-    }
-
-    private String getPhotoName(){
-        return nextPhotoName;
-    }
 
 
     /*=========================================================================

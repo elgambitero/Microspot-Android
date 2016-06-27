@@ -12,8 +12,6 @@ import android.support.v7.widget.Toolbar;
 
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.Toast;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -200,15 +198,15 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         Double[] yCoord;
         yCoord = new Double[_shots[1]];
         for(int i = 0; i <_shots[1]; i++){
-            yCoord[i]=25.0 -(_intervals[1]*_shots[1]/2) + i*_intervals[1];
+            yCoord[i]=7.5 -(_intervals[1]*_shots[1]/2) + i*_intervals[1];
         }
         return yCoord;
     }
 
 
     @Override
-    public SerialService getSerialService(){
-        return serialService;
+    public void moveAxisRel(Double xCoord, Double yCoord, Double speed){
+        serialService.moveAxisRel(xCoord, yCoord, speed);
     }
 
     @Override
