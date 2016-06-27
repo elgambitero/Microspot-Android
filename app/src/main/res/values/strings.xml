@@ -33,6 +33,8 @@
 
     <string name="temp_directory">/temp</string>
     <string name="temp_info_file">/temp/info.txt</string>
+    <string name="temp_scans_folder">/temp/scans/</string>
+    <string name="samples_folder">/samples</string>
     <string name="start_serial">Start</string>
     <string name="home_axis">Home Axis</string>
     <string name="x_minus">X-</string>

@@ -80,7 +80,7 @@ public class Sample {
 
     public static List<Sample> createSamplesList(Context context) {
         List<Sample> samples = new ArrayList<Sample>();
-        File scanFolder = context.getExternalFilesDir("/scans");
+        File scanFolder = context.getExternalFilesDir("/samples");
         File scanFiles[] = scanFolder.listFiles();
         if (scanFolder.listFiles()!=null) {
             for (int i = 0; i < (scanFiles.length); i++) {

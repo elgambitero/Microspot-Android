@@ -178,7 +178,10 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     public void setFocusAndNext(){
         goToStep(3);
     }
-    
+
+
+
+
 
     @Override
     public Double[] getXCoordinates() {
@@ -200,14 +203,27 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         return yCoord;
     }
 
-    @Override
-    public void makePhoto() {
 
+    @Override
+    public SerialService getSerialService(){
+        return serialService;
     }
 
-    @Override
-    public void nextPosition() {
 
+    @Override
+    public void endScan(){
+        deleteTempFile(this);
+
+        /*
+        android.support.v4.app.FragmentTransaction fragTran;
+        fragTran = fragmentManager.beginTransaction();
+        fragTran.remove(R.id.newScanSteps);
+        fragTran.addToBackStack(null);
+        fragTran.commit();
+        */
+        
+        Intent i = new Intent(getPackageName()+".MANAGESAMPLES");
+        startActivity(i);
     }
 
     /*===============================
