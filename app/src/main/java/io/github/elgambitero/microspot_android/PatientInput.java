@@ -59,8 +59,9 @@ public class PatientInput extends android.support.v4.app.Fragment implements Vie
             case R.id.configscan:
                 if(patientId.getText().toString().matches("")){
                     Toast.makeText(getActivity(), "You must provide a patient ID", Toast.LENGTH_SHORT).show();
+                }else {
+                    newScanListener.writePatientDataAndNext(patientId.getText().toString(), annotation.getText().toString());
                 }
-                newScanListener.writePatientDataAndNext(patientId.getText().toString(),annotation.getText().toString());
         }
     }
 }

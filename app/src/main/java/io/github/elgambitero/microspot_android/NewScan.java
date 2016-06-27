@@ -37,6 +37,7 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     Boolean isBound;
     SerialService serialService;
     private static final String TAG = "NewScan";
+    String _patientId;
 
     /*========================
     Activity lifecycle Methods
@@ -144,6 +145,7 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     @Override
     public void writePatientDataAndNext(String id, String annotation) {
         try {
+            _patientId = id;
             out.write(("PatientId = " + id + "\r\n").getBytes());
             out.write(("annotations = " + annotation + "\r\n").getBytes());
         }catch (Exception e) {
@@ -209,6 +211,10 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         return serialService;
     }
 
+    @Override
+    public String getPatientId(){
+        return _patientId;
+    }
 
     @Override
     public void endScan(){
@@ -221,7 +227,7 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         fragTran.addToBackStack(null);
         fragTran.commit();
         */
-        
+
         Intent i = new Intent(getPackageName()+".MANAGESAMPLES");
         startActivity(i);
     }
