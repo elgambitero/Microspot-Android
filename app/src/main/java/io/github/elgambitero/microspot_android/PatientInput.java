@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 /**
  * Created by Jaime García Villena "garciavillena.jaime@gmail.com" on 6/25/16.
@@ -56,6 +57,9 @@ public class PatientInput extends android.support.v4.app.Fragment implements Vie
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.configscan:
+                if(patientId.getText().toString().matches("")){
+                    Toast.makeText(getActivity(), "You must provide a patient ID", Toast.LENGTH_SHORT).show();
+                }
                 newScanListener.writePatientDataAndNext(patientId.getText().toString(),annotation.getText().toString());
         }
     }
