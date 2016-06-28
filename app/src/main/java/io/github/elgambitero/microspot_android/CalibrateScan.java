@@ -51,10 +51,12 @@ public class CalibrateScan extends Fragment implements View.OnClickListener{
 
     private void initializeLayout(View view){
         framePreview = (TextureView) view.findViewById(R.id.camera_preview_scan);
+        newScanListener.setCalibCameraPreview(framePreview);
         startButton = (Button)view.findViewById(R.id.startScan);
         nocamview = new ImageView(getContext());
         newScanListener.setCalibCameraPreview(framePreview);
         startButton.setOnClickListener(this);
+        framePreview.setSurfaceTextureListener((TextureView.SurfaceTextureListener) getActivity());
     }
 
 

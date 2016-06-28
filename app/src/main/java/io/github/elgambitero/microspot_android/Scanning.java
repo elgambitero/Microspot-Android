@@ -215,13 +215,13 @@ public class Scanning extends Fragment{
                         getExternalFilesDir(String.valueOf(R.string.temp_scans_folder + shotName)));
 
                 //Make the photo with nextPhotoName filename!!!
-
+/*
                 safeToShoot = false;
                 while(!safeToShoot){
                     wait(1000);
                     Log.d(TAG,"Waiting for a new shot");
                 }
-
+*/
             }
         }).start();
     }

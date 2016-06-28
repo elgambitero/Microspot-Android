@@ -18,12 +18,10 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
-import android.hardware.camera2.DngCreator;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
-import android.media.MediaScannerConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -36,15 +34,13 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -86,6 +82,7 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
 
     TextureView mPreviewView;
     private String _nextPhotoName;
+    private static boolean useRaw = false;
 
 
     /*==========================
@@ -97,21 +94,29 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.newscan);
-        try {
-            initializeLayout();
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-        setSupportActionBar(toolbar);
+
+        //Temporal file cautions. Make new tempfile.
         out = getTempFile(true);
 
+        //Serial service cautions
         isBound = false;
         Log.d(TAG, "Attempting to bind");
         Intent i = new Intent(this, SerialService.class);
         isBound = getApplicationContext().bindService(i, serialConnection, Context.BIND_AUTO_CREATE);
 
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            initializeLayout();
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -133,7 +138,13 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         toolbar = (Toolbar) findViewById(R.id.newtoolbar);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        /*
+        mPreviewView = (TextureView) findViewById(R.id.camera_preview_scan);
+
+        mPreviewView.setSurfaceTextureListener(this);
+*/
         goToStep(0);
     }
 
@@ -198,11 +209,11 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     }
 
 
-    /*================================
+    /*==================================
     *
-    Fragment interface implementations
+    * Fragment interface implementations
     *
-    ================================*/
+    ==================================*/
 
     /*====================
     PatientInput interface
@@ -262,7 +273,6 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     @Override
     public void setCalibCameraPreview(TextureView t) {
         mPreviewView = t;
-        mPreviewView.setSurfaceTextureListener(this);
     }
 
 
@@ -290,7 +300,6 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         }
         return yCoord;
     }
-
 
     @Override
     public void moveAxisRel(Double xCoord, Double yCoord, Double speed) {
@@ -356,9 +365,11 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     };
 
 
-    /*=================================================
-    Camera2 methods. Based on code snippet by @natevogt
-    =================================================*/
+    /*===================================================
+    *
+    * Camera2 methods. Based on code snippet by @natevogt
+    *
+    ===================================================*/
 
     private void initCamera(SurfaceTexture surface) throws CameraAccessException {
         CameraManager cm = (CameraManager) getSystemService(CAMERA_SERVICE);
@@ -390,46 +401,49 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
                 supportsJpeg = true;
             }
         }
-        if (supportsRaw) {
-            mCaptureImageFormat = ImageFormat.RAW_SENSOR;
-        } else if (supportsJpeg) {
+
+        //Lets look for preview sizes, regarding our preferences and possibilities on image format
+        if(supportsRaw && useRaw){
+            mCaptureImageFormat = ImageFormat.RAW_SENSOR; //Don't use raw unless told to.
+        }else if(supportsJpeg){
             mCaptureImageFormat = ImageFormat.JPEG;
-        } else {
+        }else{
             throw new CameraAccessException(CameraAccessException.CAMERA_ERROR, "Couldn't find supported image format");
         }
 
-        // alternatively, make a way for the user to select a capture size..
-        Size rawSize = streamConfigs.getOutputSizes(ImageFormat.RAW_SENSOR)[0];
-        Size jpegSize = streamConfigs.getOutputSizes(ImageFormat.JPEG)[0];
+        Size[] sizes = streamConfigs.getOutputSizes(mCaptureImageFormat);
+        Size mSize = sizes[0];
 
-        // find the preview size that best matches the aspect ratio of the camera sensor..
         Size[] previewSizes = streamConfigs.getOutputSizes(SurfaceTexture.class);
-        mPreviewSize = findOptimalPreviewSize(previewSizes, rawSize);
-        if (mPreviewSize == null) {
+        mPreviewSize= findOptimalPreviewSize(previewSizes,mSize);
+        if (mPreviewSize == null){
             return;
         }
 
-        // set up capture surfaces and image readers..
-        mPreviewSurface = new Surface(surface);
-        ImageReader rawReader = ImageReader.newInstance(rawSize.getWidth(), rawSize.getHeight(),
-                ImageFormat.RAW_SENSOR, 1);
-        rawReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+        //Bind a surface to our preview surface
+        mPreviewSurface =  new Surface(surface);
+
+        //Link a file saving task to the moment in which there is a image to catch.
+        ImageReader mImageReader = ImageReader.newInstance(mSize.getWidth(), mSize.getHeight(),
+                mCaptureImageFormat, 1);
+        mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
-            public void onImageAvailable(ImageReader reader) {
-                new SaveRawTask(NewScan.this, _nextPhotoName, reader.acquireLatestImage(),
-                        mCharacteristics, mPendingResult).execute();
+            public void onImageAvailable(ImageReader imageReader) {
+                new SaveTask(NewScan.this,_nextPhotoName, imageReader.acquireLatestImage(),
+                        mCharacteristics,mPendingResult).execute();
             }
-        }, null);
-        mRawCaptureSurface = rawReader.getSurface();
-        ImageReader jpegReader = ImageReader.newInstance(jpegSize.getWidth(), jpegSize.getHeight(),
-                ImageFormat.JPEG, 1);
-        jpegReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
-            @Override
-            public void onImageAvailable(ImageReader reader) {
-                new SaveJpegTask(NewScan.this, _nextPhotoName, reader.acquireLatestImage()).execute();
-            }
-        }, null);
-        mJpegCaptureSurface = jpegReader.getSurface();
+        },null);
+
+        /*Let's create the list of surfaces we want the camera to look up for, depending on our available
+        formats*/
+
+        final List<Surface> surfaces;
+
+        if(mCaptureImageFormat == ImageFormat.RAW_SENSOR){
+            surfaces = Arrays.asList(mPreviewSurface,mRawCaptureSurface);
+        }else{
+            surfaces = Arrays.asList(mPreviewSurface,mJpegCaptureSurface);
+        }
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -445,7 +459,7 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
                 @Override
                 public void onOpened(@NonNull CameraDevice camera) {
                     mCamera = camera;
-                    initPreview();
+                    initPreview(surfaces);
                 }
 
                 @Override
@@ -461,16 +475,15 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         }
     }
 
-    private void initPreview() {
+    private void initPreview(List<Surface> surfaces) {
         // scale preview size to fill screen width
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         float previewRatio = mPreviewSize.getWidth() / ((float) mPreviewSize.getHeight());
         int previewHeight = Math.round(screenWidth * previewRatio);
-        WindowManager.LayoutParams params = (WindowManager.LayoutParams) mPreviewView.getLayoutParams();
+        ViewGroup.LayoutParams params = mPreviewView.getLayoutParams();
         params.width = screenWidth;
         params.height = previewHeight;
 
-        List<Surface> surfaces = Arrays.asList(mPreviewSurface, mRawCaptureSurface, mJpegCaptureSurface);
         try {
             mCamera.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
                 @Override
@@ -567,10 +580,32 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         }
     }
 
+    private static class SaveTask extends AsyncTask<Void, Void, Boolean> {
+
+        public SaveTask(Context context, String filename, Image image, CameraCharacteristics characteristics, CaptureResult metadata) {
+
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return null;
+        }
+    }
+
+
+    /*=================
+    * Surface overrides
+    =================*/
+
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
-
+        try{
+            initCamera(surfaceTexture);
+        }catch (CameraAccessException e){
+            Log.e(TAG,"Failed to open camera");
+        }
     }
+
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
@@ -579,6 +614,11 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        if(mCamera != null){
+            mCamera.close();
+            mCamera = null;
+        }
+        mSession = null;
         return false;
     }
 
@@ -587,85 +627,6 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
 
     }
 
-    private static class SaveRawTask extends AsyncTask<Void, Void, Boolean> {
-
-        private WeakReference<Context> mContextRef;
-        private File mFile;
-        private Image mImage;
-        private DngCreator mDngCreator;
-
-        public SaveRawTask(Context context, String dir, Image image, CameraCharacteristics characteristics, CaptureResult metadata) {
-            mContextRef = new WeakReference<>(context);
-            mFile = new File(dir);
-            mImage = image;
-            mDngCreator = new DngCreator(characteristics, metadata);
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            try {
-                mDngCreator.writeImage(new FileOutputStream(mFile), mImage);
-                mDngCreator.close();
-                mImage.close();
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            Context context = mContextRef.get();
-            if (context != null) {
-                if (result) {
-                    MediaScannerConnection.scanFile(context, new String[]{mFile.getAbsolutePath()}, null, null);
-                    Toast.makeText(context, "Image captured!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(context, "Error saving image", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-    }
-
-    private static class SaveJpegTask extends AsyncTask<Void, Void, Boolean> {
-
-        private File mFile;
-        private Image mImage;
-        private WeakReference<Context> mContextRef;
-
-        public SaveJpegTask(Context context, String dir, Image image) {
-            mContextRef = new WeakReference<>(context);
-            mFile = new File(dir);
-            mImage = image;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
-            byte[] bytes = new byte[buffer.capacity()];
-            buffer.get(bytes);
-            mImage.close();
-            try {
-                new FileOutputStream(mFile).write(bytes);
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            Context context = mContextRef.get();
-            if (context != null) {
-                if (result) {
-                    MediaScannerConnection.scanFile(context, new String[]{mFile.getAbsolutePath()}, null, null);
-                    Toast.makeText(context, "Image captured!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(context, "Error saving image", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-    }
 
     /**
      * Given a target size for raw output, search available preview sizes for one with a similar
