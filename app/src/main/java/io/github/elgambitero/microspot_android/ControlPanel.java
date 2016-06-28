@@ -81,8 +81,10 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     //Camera related variables
     private CameraDevice mCamera;
     private CameraCaptureSession mSession;
+
     private TextureView mPreviewView;
-    private Surface mRawCaptureSurface, mJpegCaptureSurface, mPreviewSurface;
+    private Surface mPreviewSurface;
+
     private CaptureResult mPendingResult;
     private Size mPreviewSize;
     private File mPhotoDir;
@@ -347,7 +349,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         params.width = screenWidth;
         params.height = previewHeight;
 
-        List<Surface> surfaces = Arrays.asList(mPreviewSurface, mRawCaptureSurface, mJpegCaptureSurface);
+        List<Surface> surfaces = Arrays.asList(mPreviewSurface);
         try {
             mCamera.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
                 @Override
@@ -416,8 +418,6 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         }
         return null;
     }
-
-
 
     /*===============================
     *
