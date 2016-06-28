@@ -3,13 +3,13 @@ package io.github.elgambitero.microspot_android;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 /**
@@ -20,14 +20,14 @@ public class CalibrateScan extends Fragment implements View.OnClickListener{
 
     CalibrateScanListener newScanListener;
 
-    TextureView framePreview;
+    TextureView mPreviewView;
+    Camera2Preview camera2Preview;
     ImageView nocamview;
 
     Button startButton;
 
     public interface CalibrateScanListener{
         void setFocusAndNext() throws CameraAccessException;
-        void setCalibCameraPreview(TextureView t);
     }
 
     @Override
@@ -49,14 +49,20 @@ public class CalibrateScan extends Fragment implements View.OnClickListener{
         return view;
     }
 
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        camera2Preview = new Camera2Preview(getContext(),mPreviewView);
+    }
+
+
     private void initializeLayout(View view){
-        framePreview = (TextureView) view.findViewById(R.id.camera_preview_scan);
-        newScanListener.setCalibCameraPreview(framePreview);
-        startButton = (Button)view.findViewById(R.id.startScan);
+        mPreviewView = (TextureView) view.findViewById(R.id.camera_preview_scan);
         nocamview = new ImageView(getContext());
-        newScanListener.setCalibCameraPreview(framePreview);
+
+        startButton = (Button)view.findViewById(R.id.startScan);
         startButton.setOnClickListener(this);
-        framePreview.setSurfaceTextureListener((TextureView.SurfaceTextureListener) getActivity());
     }
 
 

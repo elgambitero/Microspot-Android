@@ -3,19 +3,12 @@ package io.github.elgambitero.microspot_android;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.graphics.SurfaceTexture;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CaptureResult;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.Size;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,11 +33,11 @@ public class Scanning extends Fragment{
 
     ProgressBar progressBar;
 
-    private CameraDevice mCamera;
-    private TextureView mPreviewView;
     private File scansTempDir;
     boolean safeToShoot;
 
+    TextureView mPreviewView;
+    Camera2Preview camera2Preview;
 
     private final String TAG = "Scanning";
 
@@ -96,6 +89,7 @@ public class Scanning extends Fragment{
 
         initializeLayout(view);
 
+        camera2Preview = new Camera2Preview(getContext(),mPreviewView);
 
         return view;
     }
