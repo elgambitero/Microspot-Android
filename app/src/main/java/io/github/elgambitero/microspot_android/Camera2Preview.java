@@ -29,7 +29,6 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.ViewGroup;
@@ -39,7 +38,7 @@ import java.util.List;
 
 /** A basic Camera preview class */
 
-public class CameraPreview extends SurfaceView implements TextureView.SurfaceTextureListener {
+public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTextureListener {
 
     private CameraDevice mCamera;
     private CameraCaptureSession mSession;
@@ -52,10 +51,11 @@ public class CameraPreview extends SurfaceView implements TextureView.SurfaceTex
 
     private static String TAG = "Camera2Preview";
 
-    public CameraPreview(Context context,TextureView preview) {
+    public Camera2Preview(Context context, TextureView view) {
         super(context);
         mContext = context;
-        previewView = preview;
+        previewView = view;
+        previewView.setSurfaceTextureListener(this);
 
     }
 
@@ -209,12 +209,12 @@ public class CameraPreview extends SurfaceView implements TextureView.SurfaceTex
         }
     }
 
-    private void initPreview(TextureView view) {
+    private void initPreview(TextureView previewView   ) {
         // scale preview size to fill screen width
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         float previewRatio = mPreviewSize.getWidth() / ((float) mPreviewSize.getHeight());
         int previewHeight = Math.round(screenWidth * previewRatio);
-        ViewGroup.LayoutParams params = view.getLayoutParams();
+        ViewGroup.LayoutParams params = previewView.getLayoutParams();
         params.width = screenWidth;
         params.height = previewHeight;
 
