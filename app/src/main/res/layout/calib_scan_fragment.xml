@@ -6,7 +6,7 @@
     android:baselineAligned="false">
 
 
-    <FrameLayout
+    <TextureView
         android:id="@+id/camera_preview_scan"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

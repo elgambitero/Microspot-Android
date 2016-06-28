@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:weightSum="100">
 
-    <FrameLayout
+    <TextureView
         android:id="@+id/camera_preview_scanning"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

@@ -2,14 +2,26 @@ package io.github.elgambitero.microspot_android;
 
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CaptureResult;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Size;
 import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
+
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -28,33 +40,59 @@ public class Scanning extends Fragment{
 
     ProgressBar progressBar;
 
+    private CameraDevice mCamera;
+    private TextureView mPreviewView;
+    private File scansTempDir;
+    boolean safeToShoot;
+
 
     private final String TAG = "Scanning";
 
     String nextPhotoName;
+    String shotName;
 
     Double[] xCoord, yCoord;
 
     ScanningListener newScanListener;
 
 
-    public interface ScanningListener{
+
+
+    /*==========================
+    Interface with main activity
+    ==========================*/
+
+    public interface ScanningListener {
         Double[] getXCoordinates();
+
         Double[] getYCoordinates();
+
         String getPatientId();
+
         void moveAxisRel(Double xCoord, Double yCoord, Double speed);
+
+        void setNextPhotoName(String name);
+
         void endScan();
     }
 
     /*================
     Fragment lifecycle
-    ==================*/
+    ================*/
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.scanning_fragment,container,false);
+        View view = inflater.inflate(R.layout.scanning_fragment, container, false);
+
+        scansTempDir = new File(
+                String.valueOf(getContext().
+                        getExternalFilesDir(String.valueOf(R.string.temp_scans_folder))));
+        if (!scansTempDir.exists()) {
+            scansTempDir.mkdir();
+        }
+        Log.d(TAG, "Dirs made");
 
         initializeLayout(view);
 
@@ -65,9 +103,9 @@ public class Scanning extends Fragment{
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        try{
+        try {
             newScanListener = (ScanningListener) context;
-        }catch (ClassCastException e){
+        } catch (ClassCastException e) {
             e.printStackTrace();
         }
 
@@ -80,7 +118,7 @@ public class Scanning extends Fragment{
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Log.d(TAG,"Invoke thread");
+        Log.d(TAG, "Invoke thread");
         scanThread();
     }
 
@@ -88,14 +126,20 @@ public class Scanning extends Fragment{
     * Layout methods
     ================*/
 
-    public void initializeLayout(View v){
+    public void initializeLayout(View v) {
 
-        progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
+        progressBar = (ProgressBar) v.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
-        progressBar.setMax(xCoord.length*yCoord.length);
+        progressBar.setMax(xCoord.length * yCoord.length);
         progressBar.setProgress(0);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        mPreviewView = (TextureView) v.findViewById(R.id.camera_preview_scanning);
+
 
     }
+
 
 
     /*================
@@ -121,11 +165,6 @@ public class Scanning extends Fragment{
         new Thread(new Runnable() {
             @Override
             public void run() {
-                File newDir = new File(
-                        String.valueOf(getContext().
-                                getExternalFilesDir(String.valueOf(R.string.temp_scans_folder))));
-                newDir.mkdirs();
-                Log.d(TAG,"Dirs made");
                 Double incX, incY;
                 incX = xCoord[0]-25.0;
                 incY = yCoord[0]-7.5;
@@ -171,11 +210,17 @@ public class Scanning extends Fragment{
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                String shotName = xShotNum.toString() + "_" + yShotNum.toString() + ".jpg";
+                shotName = xShotNum.toString() + "_" + yShotNum.toString() + ".jpg";
                 nextPhotoName = String.valueOf(getContext().
                         getExternalFilesDir(String.valueOf(R.string.temp_scans_folder + shotName)));
 
                 //Make the photo with nextPhotoName filename!!!
+
+                safeToShoot = false;
+                while(!safeToShoot){
+                    wait(1000);
+                    Log.d(TAG,"Waiting for a new shot");
+                }
 
             }
         }).start();

@@ -1,6 +1,7 @@
 package io.github.elgambitero.microspot_android;
 
 import android.content.Context;
+import android.hardware.camera2.CameraAccessException;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -22,7 +23,7 @@ public class PatientInput extends android.support.v4.app.Fragment implements Vie
     PatientInputListener newScanListener;
 
     public interface PatientInputListener{
-        void writePatientDataAndNext(String id, String annotation);
+        void writePatientDataAndNext(String id, String annotation) throws CameraAccessException;
     }
 
     @Override
@@ -60,7 +61,11 @@ public class PatientInput extends android.support.v4.app.Fragment implements Vie
                 if(patientId.getText().toString().matches("")){
                     Toast.makeText(getActivity(), "You must provide a patient ID", Toast.LENGTH_SHORT).show();
                 }else {
-                    newScanListener.writePatientDataAndNext(patientId.getText().toString(), annotation.getText().toString());
+                    try {
+                        newScanListener.writePatientDataAndNext(patientId.getText().toString(), annotation.getText().toString());
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
                 }
         }
     }

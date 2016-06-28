@@ -50,5 +50,6 @@
     <string name="scan_sample">Scan sample</string>
     <string name="scanning_sample">Scanning sample...</string>
     <string name="do_not_touch">DO NOT TOUCH THE MICROSPOT DEVICE DURING THE SCAN</string>
+    <string name="temp_folder">/temp</string>
 
 </resources>

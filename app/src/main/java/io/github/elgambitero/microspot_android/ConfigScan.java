@@ -1,6 +1,7 @@
 package io.github.elgambitero.microspot_android;
 
 import android.content.Context;
+import android.hardware.camera2.CameraAccessException;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -22,7 +23,7 @@ public class ConfigScan extends Fragment implements View.OnClickListener{
     ConfigScanListener newScanListener;
 
     public interface ConfigScanListener{
-        void writeGridDataAndNext(Double intervalX, Double intervalY, Integer shotsX, Integer shotsY);
+        void writeGridDataAndNext(Double intervalX, Double intervalY, Integer shotsX, Integer shotsY) throws CameraAccessException;
     }
 
     @Override
@@ -95,7 +96,11 @@ public class ConfigScan extends Fragment implements View.OnClickListener{
                     String grid = width.toString() + "x" + height.toString();
                     Toast.makeText(getActivity(), "Grid of " + grid + "doesn't fit the sample. Maximum size is 50x15", Toast.LENGTH_SHORT).show();
                 }else{
-                    newScanListener.writeGridDataAndNext(intervals[0],intervals[1],shots[0],shots[1]);
+                    try {
+                        newScanListener.writeGridDataAndNext(intervals[0],intervals[1],shots[0],shots[1]);
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
                 }
 
 
