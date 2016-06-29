@@ -5,8 +5,8 @@
     android:weightSum="100"
     android:baselineAligned="false">
 
-    <FrameLayout
-        android:id="@+id/camera_preview"
+    <TextureView
+        android:id="@+id/camera_preview_control_panel"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="40"

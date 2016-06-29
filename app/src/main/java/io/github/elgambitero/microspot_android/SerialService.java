@@ -158,6 +158,18 @@ public class SerialService extends Service {
 
     }
 
+    public void axisTo(Double x, Double y, Double speed){
+        serial.write("g90\r\n".getBytes());
+        String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
+        serial.write(command.getBytes());
+    }
+
+    public void moveAxisRel(Double x, Double y, Double speed){
+        serial.write("g91\r\n".getBytes());
+        String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
+        serial.write(command.getBytes());
+    }
+
     public void homeAxis(){
         serial.write("$h\r\n".getBytes());
     }

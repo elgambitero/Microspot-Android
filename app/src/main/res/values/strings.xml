@@ -21,7 +21,8 @@
     <string name="patientid">Patient ID</string>
     <string name="patientanno">Annotations</string>
 
-    <string name="beginscan">Calibrate for scan</string>
+    <string name="beginscan">Calibrate focus for scan</string>
+    <string name="configscan">Config scan grid</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -32,6 +33,8 @@
 
     <string name="temp_directory">/temp</string>
     <string name="temp_info_file">/temp/info.txt</string>
+    <string name="temp_scans_folder">/temp/scans</string>
+    <string name="samples_folder">/samples</string>
     <string name="start_serial">Start</string>
     <string name="home_axis">Home Axis</string>
     <string name="x_minus">X-</string>
@@ -39,4 +42,14 @@
     <string name="x_plus">X+</string>
     <string name="y_minus">Y-</string>
     <string name="stop_serial">Stop</string>
+    <string name="interval_x_and_y_in_mm">Enter the interval between shots along X and Y, in mm</string>
+    <string name="shots_x_and_y_axis">Enter how many shots do you want along X and Y axis</string>
+    <string name="x_axis">X axis</string>
+    <string name="y_axis">Y axis</string>
+    <string name="gridDefaultsTo">If left blank, these values default to the standard sample scanning grid</string>
+    <string name="scan_sample">Scan sample</string>
+    <string name="scanning_sample">Scanning sample...</string>
+    <string name="do_not_touch">DO NOT TOUCH THE MICROSPOT DEVICE DURING THE SCAN</string>
+    <string name="temp_folder">/temp</string>
+
 </resources>

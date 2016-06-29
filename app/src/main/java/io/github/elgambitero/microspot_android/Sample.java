@@ -1,6 +1,8 @@
 package io.github.elgambitero.microspot_android;
 
 import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -20,23 +22,30 @@ import java.util.zip.ZipInputStream;
 
 /**
  * Created by CodePath
- * Adapted by elgambitero on 05/01/16.
+ * Adapted by Jaime García Villena on 05/01/16.
  */
 public class Sample {
-    private String _Title,_Id, _annotations, _shotsX, _shotsY, _gridSize;
+    private String _Title, _Id, _annotations;
+    private Double[] _intervals = new Double[2];
+    private Integer[] _shots = new Integer[2];
+    private static String TAG = "Sample";
 
 
     public Sample(String filename, Context context){
         linkedFile = new File(filename);
-        String folderstring = context.getExternalFilesDir("/scans").getPath();
+        String folderstring = context.getExternalFilesDir("/samples").getPath();
         _Title = filename.substring(folderstring.length()+1,
                 filename.length()-4);
     }
 
+    /*===========================
+    * Sample info getting methods
+      ===========================*/
+
+
     public String getTitle() {
         return _Title;
     }
-
     public String getId() {
         return _Id;
     }
@@ -44,18 +53,29 @@ public class Sample {
         return _annotations;
     }
 
-    public String getShotsX() {
-        return _shotsX;
+    public Integer[] getShots(){
+        return _shots;
     }
 
-    public String getShotsY() {
-        return _shotsY;
+    public Double[] getIntervals(){
+        return _intervals;
     }
 
-    public String getGridSize() {
-        return _gridSize;
+
+  /*===========================
+  * Sample info setting methods
+    ===========================*/
+
+    public void setTitle(String s) {
+        _Title = s;
     }
 
+    public void setId(String s) {
+        _Id = s;
+    }
+    public void setAnno(String s) {
+        _annotations = s;
+    }
 
 
 
@@ -63,10 +83,12 @@ public class Sample {
 
     public static List<Sample> createSamplesList(Context context) {
         List<Sample> samples = new ArrayList<Sample>();
-        File scanFolder = context.getExternalFilesDir("/scans");
+        File scanFolder = context.getExternalFilesDir("/samples");
         File scanFiles[] = scanFolder.listFiles();
+        Log.d(TAG, String.valueOf(scanFiles.length) + "Found");
         if (scanFolder.listFiles()!=null) {
             for (int i = 0; i < (scanFiles.length); i++) {
+                Log.d(TAG,"Files found");
                 samples.add(new Sample(scanFiles[i].getPath(),context));
             }
         }
@@ -79,7 +101,7 @@ public class Sample {
         //First unzip the info.txt and store it in a temp folder
         deleteTempFile(context);
         File tempFile = new File(context.getExternalFilesDir("/temp").
-                        getPath()+"/info.txt");
+                getPath()+"/info.txt");
         OutputStream out = new FileOutputStream(tempFile);
         FileInputStream fin = new FileInputStream(linkedFile.getPath());
         BufferedInputStream bin = new BufferedInputStream(fin);
@@ -113,14 +135,38 @@ public class Sample {
                 case "annotations":
                     _annotations=content;
                     break;
-                case "shotsX":
-                    _shotsX=content;
-                    break;
-                case "shotsY":
-                    _shotsY=content;
-                    break;
-                case "gridSize":
-                    _gridSize=content;
+                default:
+                    Double contentDouble = 0.0;
+                    try {
+                        contentDouble = Double.parseDouble(content);
+                    }catch (NumberFormatException e){
+                        e.printStackTrace();
+                        contentDouble = 0.0;
+                    }
+                    switch(field) {
+                        case "intervalX":
+                            _intervals[0] = contentDouble;
+                            break;
+                        case "intervalY":
+                            _intervals[1] = contentDouble;
+                            break;
+                        default:
+                            Integer contentInteger = 0;
+                            try{
+                                contentInteger = Integer.parseInt(content);
+                            }catch (NumberFormatException e){
+                                e.printStackTrace();
+                            }
+                            switch(field) {
+                               case "shotsX":
+                                   _shots[0] = contentInteger;
+                                   break;
+                               case "shotsY":
+                                   _shots[1] = contentInteger;
+                                   break;
+                            }
+                            break;
+                    }
                     break;
             }
             aux = infoBR.readLine();

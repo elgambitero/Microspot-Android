@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/newScanSteps"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -20,8 +22,27 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <!--
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/patientinput"
+        android:name="io.github.elgambitero.microspot_android.PatientInput"
+        tools:layout="@layout/patientinput_fragment">
+    </fragment>
+
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/presetinput"
+        android:name="io.github.elgambitero.microspot_android.ConfigScan"
+        tools:layout="@layout/scan_config_fragment">
+
+    </fragment>
+-->
+    <!--
     <include
-        layout="@layout/patientinput"
+        layout="@layout/patientinput_fragment"
         android:layout_height="wrap_content"
         android:layout_width="fill_parent">
     </include>
@@ -32,7 +53,7 @@
         android:text="@string/beginscan"
         android:id="@+id/beginscan"
         android:layout_gravity="center_horizontal" />
-
+-->
 
     
 </LinearLayout>
