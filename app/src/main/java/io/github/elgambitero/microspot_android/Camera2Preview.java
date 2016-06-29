@@ -65,6 +65,15 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
 
     private static String TAG = "Camera2Preview";
 
+    public interface AsyncResponse{
+        void finishedPhoto(Boolean result);
+    }
+
+
+    public void finishedPhoto(Boolean result){
+        safeToShoot = result;
+    }
+
     /*==========
     *Constructor
     ==========*/
@@ -343,7 +352,6 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     // save this, as it's needed to create raw files
-                    safeToShoot = true;
                     mPendingResult = result;
                 }
 
@@ -400,11 +408,12 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
         }
     }
 
-    private static class SaveJpegTask extends AsyncTask<Void, Void, Boolean> {
+    private class SaveJpegTask extends AsyncTask<Void, Void, Boolean> {
 
         private File mFile;
         private Image mImage;
         private WeakReference<Context> mContextRef;
+
 
         public SaveJpegTask(Context context, String filename, Image image) {
             mContextRef = new WeakReference<>(context);
@@ -433,6 +442,7 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
                 if (result) {
                     MediaScannerConnection.scanFile(context, new String[]{mFile.getAbsolutePath()}, null, null);
                     Toast.makeText(context, "Image captured!", Toast.LENGTH_SHORT).show();
+                    finishedPhoto(result);
                 } else {
                     Toast.makeText(context, "Error saving image", Toast.LENGTH_LONG).show();
                 }
