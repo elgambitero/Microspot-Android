@@ -1,6 +1,8 @@
 package io.github.elgambitero.microspot_android;
 
 import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -26,11 +28,12 @@ public class Sample {
     private String _Title, _Id, _annotations;
     private Double[] _intervals = new Double[2];
     private Integer[] _shots = new Integer[2];
+    private static String TAG = "Sample";
 
 
     public Sample(String filename, Context context){
         linkedFile = new File(filename);
-        String folderstring = context.getExternalFilesDir("/scans").getPath();
+        String folderstring = context.getExternalFilesDir("/samples").getPath();
         _Title = filename.substring(folderstring.length()+1,
                 filename.length()-4);
     }
@@ -80,10 +83,12 @@ public class Sample {
 
     public static List<Sample> createSamplesList(Context context) {
         List<Sample> samples = new ArrayList<Sample>();
-        File scanFolder = context.getExternalFilesDir(String.valueOf(R.string.samples_folder));
+        File scanFolder = context.getExternalFilesDir("/samples");
         File scanFiles[] = scanFolder.listFiles();
+        Log.d(TAG, String.valueOf(scanFiles.length) + "Found");
         if (scanFolder.listFiles()!=null) {
             for (int i = 0; i < (scanFiles.length); i++) {
+                Log.d(TAG,"Files found");
                 samples.add(new Sample(scanFiles[i].getPath(),context));
             }
         }
@@ -96,7 +101,7 @@ public class Sample {
         //First unzip the info.txt and store it in a temp folder
         deleteTempFile(context);
         File tempFile = new File(context.getExternalFilesDir("/temp").
-                        getPath()+"/info.txt");
+                getPath()+"/info.txt");
         OutputStream out = new FileOutputStream(tempFile);
         FileInputStream fin = new FileInputStream(linkedFile.getPath());
         BufferedInputStream bin = new BufferedInputStream(fin);

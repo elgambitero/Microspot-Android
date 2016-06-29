@@ -104,11 +104,6 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
         getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        /*
-        mPreviewView = (TextureView) findViewById(R.id.camera_preview_scan);
-
-        mPreviewView.setSurfaceTextureListener(this);
-*/
         goToStep(0);
     }
 
@@ -279,6 +274,8 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     @Override
     public void endScan() {
         deleteTempFile(this);
+
+        serialService.homeAxis();
 
         /*
         android.support.v4.app.FragmentTransaction fragTran;

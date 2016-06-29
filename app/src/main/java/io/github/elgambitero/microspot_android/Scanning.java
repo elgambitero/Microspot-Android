@@ -3,8 +3,9 @@ package io.github.elgambitero.microspot_android;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.hardware.camera2.CameraDevice;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -23,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.Math;
+import java.util.logging.LogRecord;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -38,6 +40,7 @@ public class Scanning extends Fragment{
 
     TextureView mPreviewView;
     Camera2Preview camera2Preview;
+    private Handler cameraHandler = new Handler();
 
     private final String TAG = "Scanning";
 
@@ -79,9 +82,7 @@ public class Scanning extends Fragment{
 
         View view = inflater.inflate(R.layout.scanning_fragment, container, false);
 
-        scansTempDir = new File(
-                String.valueOf(getContext().
-                        getExternalFilesDir(String.valueOf(R.string.temp_scans_folder))));
+        scansTempDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + String.valueOf(R.string.temp_scans_folder));
         if (!scansTempDir.exists()) {
             scansTempDir.mkdir();
         }
@@ -142,11 +143,10 @@ public class Scanning extends Fragment{
 
 
     private void zipContentsAndExit(){
-        String source = String.valueOf(getContext()
-                .getExternalFilesDir(String.valueOf(R.string.temp_scans_folder)));
-        String destination = String.valueOf(getContext()
-                .getExternalFilesDir(String.valueOf(R.string.samples_folder)))
-                    + "/" + newScanListener.getPatientId() + ".zip";
+        String source = Environment.getExternalStorageDirectory().getAbsolutePath() + String.valueOf(R.string.temp_scans_folder);
+        String destination = Environment.getExternalStorageDirectory().getAbsolutePath()
+                + String.valueOf(R.string.samples_folder) + "/"
+                + newScanListener.getPatientId() + ".zip";
         zipFileAtPath(source, destination);
         newScanListener.endScan();
     }
@@ -191,6 +191,7 @@ public class Scanning extends Fragment{
                 }while(i<=yCoord.length);
 
                 zipContentsAndExit();
+
             }
 
             private void makeScan(Double xCoord, Double yCoord, Integer xShotNum, Integer yShotNum) throws InterruptedException {
@@ -204,18 +205,29 @@ public class Scanning extends Fragment{
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                shotName = xShotNum.toString() + "_" + yShotNum.toString() + ".jpg";
-                nextPhotoName = String.valueOf(getContext().
-                        getExternalFilesDir(String.valueOf(R.string.temp_scans_folder + shotName)));
+                shotName = "/" + xShotNum.toString() + "_" + yShotNum.toString() + ".jpg";
+                nextPhotoName = String.valueOf(Environment.getExternalStorageDirectory().getAbsolutePath() + shotName);
 
-                //Make the photo with nextPhotoName filename!!!
-/*
-                safeToShoot = false;
-                while(!safeToShoot){
-                    wait(1000);
-                    Log.d(TAG,"Waiting for a new shot");
-                }
-*/
+                camera2Preview.setNextPhotoName(nextPhotoName);
+
+                cameraHandler.post(new Runnable() {
+                    @Override
+                    public void run(){
+                        camera2Preview.capture();
+                    }
+                });
+
+
+                    while (!camera2Preview.safeToShoot) {
+                        Log.d(TAG, "Waiting for a new shot");
+                        try {
+                            Thread.sleep(1000);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
             }
         }).start();
     }
