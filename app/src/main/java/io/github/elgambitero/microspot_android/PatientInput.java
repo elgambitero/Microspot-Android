@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import Interface.PatientInputListener;
+
 /**
  * Created by Jaime García Villena "garciavillena.jaime@gmail.com" on 6/25/16.
  */
@@ -22,9 +24,7 @@ public class PatientInput extends android.support.v4.app.Fragment implements Vie
 
     PatientInputListener newScanListener;
 
-    public interface PatientInputListener{
-        void writePatientDataAndNext(String id, String annotation) throws CameraAccessException;
-    }
+
 
     @Override
     public void onAttach(Context context) {
