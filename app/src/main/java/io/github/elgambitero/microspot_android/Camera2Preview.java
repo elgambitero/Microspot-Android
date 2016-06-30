@@ -19,13 +19,9 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
-import android.hardware.camera2.DngCreator;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.Image;
 import android.media.ImageReader;
-import android.media.MediaScannerConnection;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -35,15 +31,12 @@ import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+
+import Utilities.SaveJpegTask;
+import Utilities.SaveRawTask;
 
 /** A basic Camera preview class */
 
@@ -51,27 +44,26 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
 
     private CameraDevice mCamera;
     private CameraCaptureSession mSession;
-    Size mPreviewSize;
+    private Size mPreviewSize;
     private CameraCharacteristics mCharacteristics;
     private int mCaptureImageFormat;
-    Context mContext;
-    Surface mRawCaptureSurface, mJpegCaptureSurface, mPreviewSurface;
-    TextureView previewView;
-    CaptureResult mPendingResult;
-    boolean safeToShoot;
+    private Context mContext;
+    private Surface mRawCaptureSurface, mJpegCaptureSurface, mPreviewSurface;
+    private TextureView previewView;
+    private CaptureResult mPendingResult;
+    private boolean safeToShoot;
     public String nextPhotoName;
 
     private static boolean useRaw = false;
 
     private static String TAG = "Camera2Preview";
 
-    public interface AsyncResponse{
-        void finishedPhoto(Boolean result);
+    public void setSafeToShoot(Boolean result){
+        safeToShoot = result;
     }
 
-
-    public void finishedPhoto(Boolean result){
-        safeToShoot = result;
+    public boolean getSafeToShoot(){
+        return safeToShoot;
     }
 
     /*==========
@@ -115,9 +107,7 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
     }
 
     @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
-
-    }
+    public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
 
     /*=======================================
     Camera and preview initialization methods
@@ -191,19 +181,18 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
 
         mPreviewSurface = new Surface(surface);
 
-        /*
+
         // set up capture surfaces and image readers..
         ImageReader rawReader = ImageReader.newInstance(jpegSize.getWidth(), jpegSize.getHeight(),
                 ImageFormat.RAW_SENSOR, 1);
         rawReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-                new SaveRawTask(getContext(), nextPhotoName , reader.acquireLatestImage(),
-                mCharacteristics, mPendingResult).execute();
+                (new SaveRawTask(getContext(), nextPhotoName , reader.acquireLatestImage(), mCharacteristics, mPendingResult)).execute();
             }
         }, null);
         mRawCaptureSurface = rawReader.getSurface();
-        */
+
 
         ImageReader jpegReader = ImageReader.newInstance(jpegSize.getWidth(), jpegSize.getHeight(),
                 ImageFormat.JPEG, 1);
@@ -364,89 +353,6 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
 
         } catch (CameraAccessException e) {
             Log.e(TAG, "Image capture failed", e);
-        }
-    }
-
-
-    private static class SaveRawTask extends AsyncTask<Void, Void, Boolean> {
-
-        private WeakReference<Context> mContextRef;
-        private File mFile;
-        private Image mImage;
-        private DngCreator mDngCreator;
-
-        public SaveRawTask(Context context, String filename, Image image, CameraCharacteristics characteristics, CaptureResult metadata) {
-            mContextRef = new WeakReference<>(context);
-            mFile = new File(filename);
-            mImage = image;
-            mDngCreator = new DngCreator(characteristics, metadata);
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            try {
-                mDngCreator.writeImage(new FileOutputStream(mFile), mImage);
-                mDngCreator.close();
-                mImage.close();
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            Context context = mContextRef.get();
-            if (context != null) {
-                if (result) {
-                    MediaScannerConnection.scanFile(context, new String[]{mFile.getAbsolutePath()}, null, null);
-                    Toast.makeText(context, "Image captured!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(context, "Error saving image", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-    }
-
-    private class SaveJpegTask extends AsyncTask<Void, Void, Boolean> {
-
-        private File mFile;
-        private Image mImage;
-        private WeakReference<Context> mContextRef;
-
-
-        public SaveJpegTask(Context context, String filename, Image image) {
-            mContextRef = new WeakReference<>(context);
-            mFile = new File(filename);
-            mImage = image;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
-            byte[] bytes = new byte[buffer.capacity()];
-            buffer.get(bytes);
-            mImage.close();
-            try {
-                new FileOutputStream(mFile).write(bytes);
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            Context context = mContextRef.get();
-            if (context != null) {
-                if (result) {
-                    MediaScannerConnection.scanFile(context, new String[]{mFile.getAbsolutePath()}, null, null);
-                    Toast.makeText(context, "Image captured!", Toast.LENGTH_SHORT).show();
-                    finishedPhoto(result);
-                } else {
-                    Toast.makeText(context, "Error saving image", Toast.LENGTH_LONG).show();
-                }
-            }
         }
     }
 
