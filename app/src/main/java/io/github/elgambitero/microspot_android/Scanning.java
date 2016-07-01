@@ -28,6 +28,8 @@ import java.util.logging.LogRecord;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import Utilities.Scan;
+
 /**
  * Created by Jaime García Villena "garciavillena.jaime@gmail.com" on 6/26/16.
  */
@@ -50,8 +52,6 @@ public class Scanning extends Fragment{
     Double[] xCoord, yCoord;
 
     ScanningListener newScanListener;
-
-
 
 
     /*==========================
@@ -114,7 +114,30 @@ public class Scanning extends Fragment{
         super.onViewCreated(view, savedInstanceState);
 
         Log.d(TAG, "Invoke thread");
-        scanThread();
+        //scanThread();
+        Scan scan = new Scan(xCoord, yCoord, nextPhotoName, shotName, newScanListener);
+        scan.start();
+
+        camera2Preview.setNextPhotoName(nextPhotoName);
+
+        cameraHandler.post(new Runnable() {
+            @Override
+            public void run(){
+                camera2Preview.capture();
+            }
+        });
+
+        while (!camera2Preview.safeToShoot) {
+            Log.d(TAG, "Waiting for a new shot");
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        zipContentsAndExit();
     }
 
     /*==============
@@ -131,7 +154,6 @@ public class Scanning extends Fragment{
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         mPreviewView = (TextureView) v.findViewById(R.id.camera_preview_scanning);
-
 
     }
 
@@ -156,7 +178,10 @@ public class Scanning extends Fragment{
     ===============*/
 
     private void scanThread(){
-        new Thread(new Runnable() {
+
+
+
+        /*new Thread(new Runnable() {
             @Override
             public void run() {
                 Double incX, incY;
@@ -197,6 +222,7 @@ public class Scanning extends Fragment{
             private void makeScan(Double xCoord, Double yCoord, Integer xShotNum, Integer yShotNum) throws InterruptedException {
 
                 newScanListener.moveAxisRel(xCoord, yCoord, 2000.0);
+
                 Long waitTime = (long)(Math.sqrt(Math.pow(xCoord,2)+Math.pow(yCoord,2))/0.005);
                 try{
                     Log.d(TAG,"Waiting for " + waitTime.toString() + " milliseconds");
@@ -229,7 +255,7 @@ public class Scanning extends Fragment{
                     }
 
             }
-        }).start();
+        }).start();*/
     }
 
 

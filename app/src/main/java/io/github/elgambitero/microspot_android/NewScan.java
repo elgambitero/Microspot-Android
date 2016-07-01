@@ -17,10 +17,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import Interface.PatientInputListener;
+
 /**
  * Created by elgambitero on 30/12/15.
  */
-public class NewScan extends AppCompatActivity implements PatientInput.PatientInputListener,
+public class NewScan extends AppCompatActivity implements PatientInputListener,
         ConfigScan.ConfigScanListener,
         CalibrateScan.CalibrateScanListener,
         Scanning.ScanningListener{
@@ -178,7 +181,6 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
     PatientInput interface
     ====================*/
 
-    @Override
     public void writePatientDataAndNext(String id, String annotation) throws CameraAccessException {
         try {
             _patientId = id;
@@ -319,7 +321,5 @@ public class NewScan extends AppCompatActivity implements PatientInput.PatientIn
             isBound = false;
         }
     };
-
-
 
 }
