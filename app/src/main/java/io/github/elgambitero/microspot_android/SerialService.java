@@ -47,32 +47,20 @@ public class SerialService extends Service {
     private UsbManager usbManager;
     private UsbSerialDevice serial;
     boolean connected;
-    boolean available;
 
-
+    private String data = "";
 
     UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
         @Override
         public void onReceivedData(byte[] arg0) {
-            ArrayList<String> data = new ArrayList<String>();
-            available = true;
-            try {
-                String line = "";
-                for(byte b : arg0){
-                    byte[] byteChar = {b};
-                    String character = new String(byteChar,StandardCharsets.UTF_8);
-                    line.concat(character);
-                    if(line.contains("\n")){
-                        data.add(line);
-                        line = "";
-                    }
+            if(arg0.length != 0) {
+                try {
+                    data = new String(arg0, StandardCharsets.UTF_8);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                Log.d(TAG,((Integer)arg0.length).toString());
-                for(String mLine : data) {
-                    Log.d(TAG, mLine);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+                Log.d(TAG, "Microspot message: " + data);
             }
 
         }
@@ -157,7 +145,7 @@ public class SerialService extends Service {
         public int moveAxis(Double x, Double y, Double speed){
 
             if(sanityCheck()){
-                Log.d(TAG,"Moving axis to (" + x.toString() + "," + y.toString() + ")");
+                //Log.d(TAG,"Moving axis to (" + x.toString() + "," + y.toString() + ")");
                 serial.write("g90\r\n".getBytes());
                 String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
                 serial.write(command.getBytes());
@@ -172,7 +160,7 @@ public class SerialService extends Service {
         public long moveAxisRel(Double x, Double y, Double speed){
 
             if(sanityCheck()){ //Check if something went wrong
-                Log.d(TAG,"Moving axis by (" + x.toString() + "," + y.toString() + ")");
+                //Log.d(TAG,"Moving axis by (" + x.toString() + "," + y.toString() + ")");
                 serial.write("g91\r\n".getBytes());
                 String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
                 serial.write(command.getBytes());
@@ -185,9 +173,8 @@ public class SerialService extends Service {
         }
 
         public int homeAxis(){
-
             if(sanityCheck()){ //Check if something went wrong
-                Log.d(TAG,"Homing axis");
+                //Log.d(TAG,"Homing axis");
                 serial.write("$h\r\n".getBytes());
                 return 0;
             }else{
@@ -205,9 +192,6 @@ public class SerialService extends Service {
 
         }
 
-        public boolean isAvailable(){
-            return available;
-        }
 
     }
 
@@ -298,10 +282,9 @@ public class SerialService extends Service {
     };
 
     private boolean sanityCheck(){
-        available = false;
+
         if(!connected){
             Log.d(TAG,"Sanity check failed");
-            available = true;
             return false;
         }else{
             //serial.read(mCallback);
