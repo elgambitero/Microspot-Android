@@ -1,4 +1,4 @@
-package io.github.elgambitero.microspot_android;
+package Services;
 
 
 import android.app.PendingIntent;
