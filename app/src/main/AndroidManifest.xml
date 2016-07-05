@@ -68,7 +68,7 @@
         </activity>
 
         <service
-            android:name="io.github.elgambitero.microspot_android.SerialService"
+            android:name="Services.SerialService"
             android:enabled="true" >
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />

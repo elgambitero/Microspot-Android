@@ -20,10 +20,9 @@ import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.Buffer;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by Jaime García Villena "garciavillena.jaime@gmail.com" on 6/24/16.
@@ -45,7 +44,8 @@ public class SerialService extends Service {
     private UsbSerialDevice serial;
     boolean connected;
 
-    private Queue<String> inData = new(Queue<String>);
+    private ConcurrentLinkedQueue<String> inData = new ConcurrentLinkedQueue<String>();
+
 
     UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
         @Override
@@ -144,6 +144,16 @@ public class SerialService extends Service {
                 return -1;
             }
 
+        }
+
+        public void start(){
+            if(!connected){
+                try {
+                    initializeSerial();
+                }catch (Exception e ){
+                    e.printStackTrace();
+                }
+            }
         }
 
         public void close(){
