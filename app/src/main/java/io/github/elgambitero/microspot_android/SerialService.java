@@ -1,4 +1,4 @@
-package Services;
+package io.github.elgambitero.microspot_android;
 
 
 import android.app.PendingIntent;
@@ -20,7 +20,11 @@ import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -43,21 +47,33 @@ public class SerialService extends Service {
     private UsbManager usbManager;
     private UsbSerialDevice serial;
     boolean connected;
+    boolean available;
 
-    private ConcurrentLinkedQueue<String> inData = new ConcurrentLinkedQueue<String>();
 
 
     UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
         @Override
         public void onReceivedData(byte[] arg0) {
-            String data = null;
+            ArrayList<String> data = new ArrayList<String>();
+            available = true;
             try {
-                data = new String(arg0, "UTF-8");
-                data.concat("/r/n");
-            } catch (UnsupportedEncodingException e) {
+                String line = "";
+                for(byte b : arg0){
+                    byte[] byteChar = {b};
+                    String character = new String(byteChar,StandardCharsets.UTF_8);
+                    line.concat(character);
+                    if(line.contains("\n")){
+                        data.add(line);
+                        line = "";
+                    }
+                }
+                Log.d(TAG,((Integer)arg0.length).toString());
+                for(String mLine : data) {
+                    Log.d(TAG, mLine);
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            inData.add(data);
 
         }
     };
@@ -111,41 +127,6 @@ public class SerialService extends Service {
 
     public class SerialBinder extends Binder {
 
-        public int moveAxis(Double x, Double y, Double speed){
-
-            serial.write("g90\r\n".getBytes());
-            String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
-            serial.write(command.getBytes());
-            //Maybe check if something went wrong?
-            return 0;
-
-        }
-
-        public long moveAxisRel(Double x, Double y, Double speed){
-
-            serial.write("g91\r\n".getBytes());
-            String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
-            serial.write(command.getBytes());
-            long waitTime = (long) (Math.sqrt(Math.pow(x,2)+Math.pow(y,2))/0.005);
-            if(sanityCheck()){ //Check if something went wrong
-                return waitTime;
-            }else{
-                return -1;
-            }
-
-        }
-
-        public int homeAxis(){
-
-            serial.write("$h\r\n".getBytes());
-            if(sanityCheck()){ //Check if something went wrong
-                return 0;
-            }else{
-                return -1;
-            }
-
-        }
-
         public void start(){
             if(!connected){
                 try {
@@ -156,11 +137,76 @@ public class SerialService extends Service {
             }
         }
 
+        public void reset() {
+
+            try{
+                serial.close();
+            }catch (Exception e)
+            {
+                e.printStackTrace();;
+            }
+
+            try {
+                initializeSerial();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        public int moveAxis(Double x, Double y, Double speed){
+
+            if(sanityCheck()){
+                Log.d(TAG,"Moving axis to (" + x.toString() + "," + y.toString() + ")");
+                serial.write("g90\r\n".getBytes());
+                String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
+                serial.write(command.getBytes());
+                //Maybe check if something went wrong?
+                return 0;
+            }else{
+                return -1;
+            }
+
+        }
+
+        public long moveAxisRel(Double x, Double y, Double speed){
+
+            if(sanityCheck()){ //Check if something went wrong
+                Log.d(TAG,"Moving axis by (" + x.toString() + "," + y.toString() + ")");
+                serial.write("g91\r\n".getBytes());
+                String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
+                serial.write(command.getBytes());
+                long waitTime = (long) (Math.sqrt(Math.pow(x,2)+Math.pow(y,2))/0.005);
+                return waitTime;
+            }else{
+                return -1;
+            }
+
+        }
+
+        public int homeAxis(){
+
+            if(sanityCheck()){ //Check if something went wrong
+                Log.d(TAG,"Homing axis");
+                serial.write("$h\r\n".getBytes());
+                return 0;
+            }else{
+                return -1;
+            }
+
+        }
+
         public void close(){
 
-            serial.close();
-            connected = false;
+            if(sanityCheck()){
+                serial.close();
+                connected = false;
+            }
 
+        }
+
+        public boolean isAvailable(){
+            return available;
         }
 
     }
@@ -227,7 +273,7 @@ public class SerialService extends Service {
                             serial.setParity(UsbSerialInterface.PARITY_NONE);
                             serial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
                             serial.read(mCallback);
-
+                            connected = true;
 
                         } else {
                             Log.d("SERIAL", "PORT NOT OPEN");
@@ -252,15 +298,14 @@ public class SerialService extends Service {
     };
 
     private boolean sanityCheck(){
+        available = false;
         if(!connected){
+            Log.d(TAG,"Sanity check failed");
+            available = true;
             return false;
         }else{
-            serial.read(mCallback);
-            if(inData.element().contains("ok")){
-                return true;
-            }else{
-                return false;
-            }
+            //serial.read(mCallback);
+            return true;
         }
     }
 

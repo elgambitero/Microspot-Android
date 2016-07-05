@@ -17,11 +17,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 
-import Services.SerialService;
-import Services.SerialService.SerialBinder;
+import io.github.elgambitero.microspot_android.SerialService.SerialBinder;
 
 
 /**
