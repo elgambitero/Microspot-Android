@@ -20,29 +20,57 @@ import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.Buffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Created by Jaime García Villena "garciavillena.jaime@gmail.com" on 6/24/16.
+ * Licensed under the MIT license (check MIT_LICENSE file for more info)
+ * Based on @felHR85 UsbSerial library
  */
 
 public class SerialService extends Service {
 
-    /*========================================
-    * Service binding methods and declarations
-    * ========================================*/
+    public final String ACTION_USB_PERMISSION = "com.hariharan.arduinousb.USB_PERMISSION";
 
     private final IBinder serialBinder = new SerialBinder();
 
     private String TAG = "SerialService";
 
-    public SerialService(){
+    private UsbDevice device;
+    private UsbDeviceConnection usbConnection;
+    private UsbManager usbManager;
+    private UsbSerialDevice serial;
+    boolean connected;
 
-    }
+    private Queue<String> inData = new(Queue<String>);
+
+    UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
+        @Override
+        public void onReceivedData(byte[] arg0) {
+            String data = null;
+            try {
+                data = new String(arg0, "UTF-8");
+                data.concat("/r/n");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            inData.add(data);
+
+        }
+    };
+
+
+
+    /*=========================
+    * Service lifecycle methods
+    =========================*/
 
     @Override
     public void onCreate() {
+
         super.onCreate();
 
         //Ask for permission to use the USB
@@ -54,6 +82,8 @@ public class SerialService extends Service {
             registerReceiver(broadcastReceiver, filter);
         }catch (Exception e){
             e.printStackTrace();
+            Toast.makeText(getApplicationContext(), "Permissions must be granted to connect to MicroSpot", Toast.LENGTH_LONG).show();
+            stopSelf();
         }
 
         connected = false;
@@ -62,9 +92,8 @@ public class SerialService extends Service {
         }catch (InterruptedException e) {
             Toast.makeText(getApplicationContext(), "MicroSpot not connected", Toast.LENGTH_LONG).show();
             e.printStackTrace();
-        } {
-
         }
+
     }
 
     @Nullable
@@ -74,48 +103,67 @@ public class SerialService extends Service {
         return serialBinder;
     }
 
+
+
+    /*=================
+    * Service interface
+    =================*/
+
     public class SerialBinder extends Binder {
-        SerialService getService(){
-            return SerialService.this;
+
+        public int moveAxis(Double x, Double y, Double speed){
+
+            serial.write("g90\r\n".getBytes());
+            String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
+            serial.write(command.getBytes());
+            //Maybe check if something went wrong?
+            return 0;
+
         }
+
+        public long moveAxisRel(Double x, Double y, Double speed){
+
+            serial.write("g91\r\n".getBytes());
+            String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
+            serial.write(command.getBytes());
+            long waitTime = (long) (Math.sqrt(Math.pow(x,2)+Math.pow(y,2))/0.005);
+            if(sanityCheck()){ //Check if something went wrong
+                return waitTime;
+            }else{
+                return -1;
+            }
+
+        }
+
+        public int homeAxis(){
+
+            serial.write("$h\r\n".getBytes());
+            if(sanityCheck()){ //Check if something went wrong
+                return 0;
+            }else{
+                return -1;
+            }
+
+        }
+
+        public void close(){
+
+            serial.close();
+            connected = false;
+
+        }
+
     }
 
 
 
-    /*========================
-    * Serial related variables
-    * ========================*/
 
-    public final String ACTION_USB_PERMISSION = "com.hariharan.arduinousb.USB_PERMISSION";
-
-    UsbDevice device;
-    UsbDeviceConnection usbConnection;
-    UsbManager usbManager;
-    UsbSerialDevice serial;
-    boolean connected;
-
-
-
-    UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
-        @Override
-        public void onReceivedData(byte[] arg0) {
-            String data;
-            try {
-                data = new String(arg0, "UTF-8");
-                data.concat("/r/n");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-
-
-        }
-    };
 
     /*======================
     * Serial related methods
     * ======================*/
 
-    public void initializeSerial() throws InterruptedException {
+    private void initializeSerial() throws InterruptedException {
 
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
@@ -150,33 +198,7 @@ public class SerialService extends Service {
 
     }
 
-    public void moveAxis(String axis, Double distance, Double speed){
 
-        serial.write("g91\r\n".getBytes());
-        String command = "g1 " + axis + distance.toString() + " F" + speed.toString() + "\r\n";
-        serial.write(command.getBytes());
-
-    }
-
-    public void axisTo(Double x, Double y, Double speed){
-        serial.write("g90\r\n".getBytes());
-        String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
-        serial.write(command.getBytes());
-    }
-
-    public void moveAxisRel(Double x, Double y, Double speed){
-        serial.write("g91\r\n".getBytes());
-        String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
-        serial.write(command.getBytes());
-    }
-
-    public void homeAxis(){
-        serial.write("$h\r\n".getBytes());
-    }
-
-    public void close(){
-        serial.close();
-    }
 
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
         @Override
@@ -194,7 +216,7 @@ public class SerialService extends Service {
                             serial.setStopBits(UsbSerialInterface.STOP_BITS_1);
                             serial.setParity(UsbSerialInterface.PARITY_NONE);
                             serial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
-                            serial.read(mCallback); //
+                            serial.read(mCallback);
 
 
                         } else {
@@ -214,8 +236,22 @@ public class SerialService extends Service {
                 }
             } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
                 serial.close();
+                connected = false;
             }
-        };
+        }
     };
+
+    private boolean sanityCheck(){
+        if(!connected){
+            return false;
+        }else{
+            serial.read(mCallback);
+            if(inData.element().contains("ok")){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
 
 }
