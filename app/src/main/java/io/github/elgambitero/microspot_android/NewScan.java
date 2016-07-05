@@ -23,10 +23,7 @@ import Interface.PatientInputListener;
 /**
  * Created by elgambitero on 30/12/15.
  */
-public class NewScan extends AppCompatActivity implements PatientInputListener,
-        ConfigScan.ConfigScanListener,
-        CalibrateScan.CalibrateScanListener,
-        Scanning.ScanningListener{
+public class NewScan extends AppCompatActivity{
 
     /*=====================
     *
@@ -37,19 +34,23 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
     Toolbar toolbar;
     OutputStream out;
 
+    /*
     private Double[] _intervals = new Double[2];
     private Integer[] _shots = new Integer[2];
+    */
 
     //Serial service binding variables
+    /*
     Boolean isBound;
     SerialService serialService;
     private static final String TAG = "NewScan";
     String _patientId;
+    */
 
-
+    /*
     private String _nextPhotoName;
     private static boolean useRaw = false;
-
+    */
 
     /*==========================
     *
@@ -63,6 +64,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
 
         setContentView(R.layout.newscan);
 
+        /*
         //Temporal file cautions. Make new tempfile.
         out = getTempFile(true);
 
@@ -71,7 +73,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
         Log.d(TAG, "Attempting to bind");
         Intent i = new Intent(this, SerialService.class);
         isBound = getApplicationContext().bindService(i, serialConnection, Context.BIND_AUTO_CREATE);
-
+        */
 
     }
 
@@ -110,6 +112,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
         goToStep(0);
     }
 
+
     private void goToStep(int step) throws CameraAccessException {
         android.support.v4.app.FragmentTransaction fragTran;
         fragTran = fragmentManager.beginTransaction();
@@ -123,9 +126,9 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
                 fragTran.replace(R.id.newScanSteps, step2);
                 break;
             case 2:
-                serialService.homeAxis();
-                serialService.homeAxis();
-                serialService.axisTo(25.0, 7.5, 2000.0);
+                //serialService.homeAxis();
+                //serialService.homeAxis();
+                //serialService.axisTo(25.0, 7.5, 2000.0);
                 CalibrateScan step3 = new CalibrateScan();
                 fragTran.replace(R.id.newScanSteps, step3);
                 break;
@@ -143,6 +146,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
     *
     ===================*/
 
+    /*
     private OutputStream getTempFile(boolean makeNew) {
         if (makeNew) {
             deleteTempFile(this);
@@ -169,7 +173,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
                         getExternalFilesDir(String.valueOf(R.string.temp_info_file))));
         return deleted;
     }
-
+*/
 
     /*==================================
     *
@@ -182,13 +186,13 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
     ====================*/
 
     public void writePatientDataAndNext(String id, String annotation) throws CameraAccessException {
-        try {
+  /*      try {
             _patientId = id;
             out.write(("PatientId = " + id + "\r\n").getBytes());
             out.write(("annotations = " + annotation + "\r\n").getBytes());
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
         goToStep(1);
     }
 
@@ -197,9 +201,9 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
     ConfigScan interface
     ==================*/
 
-    @Override
+
     public void writeGridDataAndNext(Double intervalX, Double intervalY, Integer shotsX, Integer shotsY) throws CameraAccessException {
-        _intervals[0] = intervalX;
+        /*_intervals[0] = intervalX;
         _intervals[1] = intervalY;
         _shots[0] = shotsX;
         _shots[1] = shotsY;
@@ -215,7 +219,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
         goToStep(2);
     }
 
@@ -225,7 +229,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
     =====================*/
 
 
-    @Override
+
     public void setFocusAndNext() throws CameraAccessException {
         goToStep(3);
     }
@@ -236,7 +240,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
     /*================
     Scanning interface
     ================*/
-
+/*
     @Override
     public Double[] getXCoordinates() {
         Double[] xCoord;
@@ -272,17 +276,18 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
         _nextPhotoName = name;
         return;
     }
+*/
 
-    @Override
     public void endScan() {
-        deleteTempFile(this);
+  /*      deleteTempFile(this);
 
         serialService.homeAxis();
 
+    */
         /*
         android.support.v4.app.FragmentTransaction fragTran;
         fragTran = fragmentManager.beginTransaction();
-        fragTran.remove(R.id.newScanSteps);
+        fragTran.remove(step4);
         fragTran.addToBackStack(null);
         fragTran.commit();
         */
@@ -290,13 +295,13 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
         Intent i = new Intent(getPackageName() + ".MANAGESAMPLES");
         startActivity(i);
     }
-
     /*===============================
     *
     * Service connection declarations
     *
     ===============================*/
 
+   /*
     private ServiceConnection serialConnection = new ServiceConnection() {
 
         @Override
@@ -321,5 +326,7 @@ public class NewScan extends AppCompatActivity implements PatientInputListener,
             isBound = false;
         }
     };
+
+    */
 
 }

@@ -104,8 +104,8 @@ public class Scanning extends Fragment{
             e.printStackTrace();
         }
 
-        xCoord = newScanListener.getXCoordinates();
-        yCoord = newScanListener.getYCoordinates();
+        //xCoord = newScanListener.getXCoordinates();
+        //yCoord = newScanListener.getYCoordinates();
 
     }
 
@@ -118,6 +118,7 @@ public class Scanning extends Fragment{
         Scan scan = new Scan(xCoord, yCoord, nextPhotoName, shotName, newScanListener);
         scan.start();
 
+        /*
         camera2Preview.setNextPhotoName(nextPhotoName);
 
         cameraHandler.post(new Runnable() {
@@ -138,6 +139,7 @@ public class Scanning extends Fragment{
         }
 
         zipContentsAndExit();
+        */
     }
 
     /*==============
@@ -164,20 +166,20 @@ public class Scanning extends Fragment{
     ==================*/
 
 
-    private void zipContentsAndExit(){
+    /*private void zipContentsAndExit(){
         String source = Environment.getExternalStorageDirectory().getAbsolutePath() + String.valueOf(R.string.temp_scans_folder);
         String destination = Environment.getExternalStorageDirectory().getAbsolutePath()
                 + String.valueOf(R.string.samples_folder) + "/"
                 + newScanListener.getPatientId() + ".zip";
         zipFileAtPath(source, destination);
         newScanListener.endScan();
-    }
+    }*/
 
     /*=============
     Scanning thread
     ===============*/
 
-    private void scanThread(){
+   // private void scanThread(){
 
 
 
@@ -255,8 +257,8 @@ public class Scanning extends Fragment{
                     }
 
             }
-        }).start();*/
-    }
+        }).start();
+    }*/
 
 
 
