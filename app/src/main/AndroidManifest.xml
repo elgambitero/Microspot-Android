@@ -68,8 +68,8 @@
         </activity>
 
         <service
-            android:name="io.github.elgambitero.microspot_android.SerialService"
-            android:enabled="true" >
+            android:name=".SerialService"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
@@ -78,57 +78,6 @@
                 android:resource="@xml/device_filter" />
         </service>
 
-
-        <!--
-        <activity
-            android:name=".Scan"
-            android:label="@string/scan_title"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.SCAN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ScanComplete"
-            android:label="@string/scancomplete_title"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.SCANCOMPLETE" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".Presets"
-            android:label="@string/presets_title"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.PRESETS" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".Settings"
-            android:label="@string/settings_title"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.SETTINGS" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".PatientInput"
-            android:label="Patient Input">
-        </activity>
-        <activity
-            android:name=".PresetInput"
-            android:label="Preset Input">
-        </activity>
--->
     </application>
 
 </manifest>

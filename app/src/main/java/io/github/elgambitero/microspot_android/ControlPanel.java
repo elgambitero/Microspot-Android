@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 
 import io.github.elgambitero.microspot_android.SerialService.SerialBinder;
@@ -50,7 +49,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
 
     //Service binding variables
     Boolean isBound;
-    SerialService serialService;
+    SerialBinder serialBinder;
 
     //Camera preview variables
     TextureView mPreviewView;
@@ -145,38 +144,25 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
                         Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 break;
             case R.id.start_serial:
-                if (!isBound) {
-                    try {
-                        serialService.initializeSerial();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "Couldn't connect to MicroSpot", Toast.LENGTH_LONG).show();
-                    }
-                }
+                serialBinder.start();
                 break;
             case R.id.home_axis:
-                serialService.homeAxis();
+                serialBinder.homeAxis();
                 break;
             case R.id.stop_serial:
-                try {
-                    serialService.close();
-                    Toast.makeText(getApplicationContext(), "MicroSpot disconnected", Toast.LENGTH_LONG).show();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "MicroSpot is already disconnected", Toast.LENGTH_LONG).show();
-                }
+                serialBinder.close();
                 break;
             case R.id.Y_minus:
-                serialService.moveAxis("Y", -10.0, 2000.0);
+                serialBinder.moveAxisRel(0.0,-10.0,2000.0);
                 break;
             case R.id.Y_plus:
-                serialService.moveAxis("Y", 10.0, 2000.0);
+                serialBinder.moveAxisRel(0.0,10.0,2000.0);
                 break;
             case R.id.X_minus:
-                serialService.moveAxis("X", -10.0, 2000.0);
+                serialBinder.moveAxisRel(-10.0,0.0,2000.0);
                 break;
             case R.id.X_plus:
-                serialService.moveAxis("X", 10.0, 2000.0);
+                serialBinder.moveAxisRel(10.0,0.0,2000.0);
                 break;
         }
     }
@@ -192,16 +178,10 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service){
-            SerialBinder binder = (SerialBinder) service;
-            serialService = binder.getService();
+            serialBinder = (SerialBinder) service;
             Log.d(TAG, "Attempted to bind.");
-            if(serialService != null) {
+            if(serialBinder != null) {
                 Log.d(TAG, "Service is bound successfully!");
-                try {
-                    serialService.initializeSerial();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
             }else{
                 Log.d(TAG, "Service binding error");
             }
