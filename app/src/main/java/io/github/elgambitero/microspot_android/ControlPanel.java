@@ -39,13 +39,8 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     ImageView nocamview;
 
     //Buttons
-    Button xPlusButton;
-    Button yPlusButton;
-    Button xMinusButton;
-    Button yMinusButton;
-    Button startSerialButton;
-    Button homeAxisButton;
-    Button stopSerialButton;
+    Button xPlusButton, yPlusButton, xMinusButton, yMinusButton, startSerialButton, homeAxisButton,
+            stopSerialButton, resetButton;
 
     //Service binding variables
     Boolean isBound;
@@ -117,6 +112,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         startSerialButton = (Button) findViewById(R.id.start_serial);
         homeAxisButton = (Button) findViewById(R.id.home_axis);
         stopSerialButton = (Button) findViewById(R.id.stop_serial);
+        resetButton = (Button) findViewById(R.id.reset_button);
 
         xPlusButton.setOnClickListener(this);
         yPlusButton.setOnClickListener(this);
@@ -125,6 +121,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         startSerialButton.setOnClickListener(this);
         homeAxisButton.setOnClickListener(this);
         stopSerialButton.setOnClickListener(this);
+        resetButton.setOnClickListener(this);
 
 
         //Camera preview
@@ -164,6 +161,8 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
             case R.id.X_plus:
                 serialBinder.moveAxisRel(10.0,0.0,2000.0);
                 break;
+            case R.id.reset_button:
+                serialBinder.reset();
         }
     }
 
@@ -193,77 +192,6 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-
-
-
 }
 
-
-/*
-    private Camera initializeCamera(){
-        if(checkCameraHardware(this)){
-            Camera cam;
-            int cameraId = -1;
-            int numberOfCameras = Camera.getNumberOfCameras();
-            for (int i = 0; i < numberOfCameras; i++) {
-                Camera.CameraInfo info = new Camera.CameraInfo();
-                Camera.getCameraInfo(i, info);
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    cameraId = i;
-                    break;
-                }
-            }
-            cam = getCameraInstance(cameraId);
-            if (cam == null){
-                Log.println(1, "Err", "NO CAMERA INSTANCED");
-            }
-            return cam;
-        }else{
-            return null;
-        }
-
-    }
-
-
-    private boolean checkCameraHardware(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
-        }
-    }
-
-    public static Camera getCameraInstance(int i){
-        Camera c = null;
-        try {
-            c = Camera.open();
-            // attempt to get a Camera instance
-        }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
-        }
-        return c; // returns null if camera is unavailable
-    }
-
-    private void setCamFocusMode(){
-
-        if(null == mCamera) {
-            return;
-        }
-
-
-        Camera.Parameters parameters = mCamera.getParameters();
-        List<String> focusModes = parameters.getSupportedFocusModes();
-        if(focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)){
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-        } else
-        if(focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)){
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }
-
-        mCamera.setParameters(parameters);
-    }
-*/
 
