@@ -192,6 +192,16 @@ public class SerialService extends Service {
 
         }
 
+        public int setLight(Integer value){
+            if(sanityCheck() && value <= 255 && value >=0){
+                String command = "S" + value.toString() + "\r\n";
+                serial.write("M03\r\n".getBytes());
+                serial.write(command.getBytes());
+                return 0;
+            }else{
+                return -1;
+            }
+        }
 
     }
 

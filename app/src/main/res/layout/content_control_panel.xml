@@ -44,6 +44,12 @@
                 android:text="@string/stop_serial"
                 android:id="@+id/stop_serial" />
 
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Set Light"
+                android:id="@+id/light_button" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -91,6 +97,14 @@
                 android:id="@+id/Y_minus"
                 android:layout_weight="0"
                 android:layout_gravity="center"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/lightText"
+                android:layout_weight="0" />
         </LinearLayout>
     </LinearLayout>
 
