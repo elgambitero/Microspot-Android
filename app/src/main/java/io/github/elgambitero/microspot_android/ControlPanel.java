@@ -16,6 +16,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 
@@ -46,6 +47,10 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     Button startSerialButton;
     Button homeAxisButton;
     Button stopSerialButton;
+    Button lightButton;
+
+    //Text fields
+    EditText lightText;
 
     //Service binding variables
     Boolean isBound;
@@ -117,6 +122,9 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         startSerialButton = (Button) findViewById(R.id.start_serial);
         homeAxisButton = (Button) findViewById(R.id.home_axis);
         stopSerialButton = (Button) findViewById(R.id.stop_serial);
+        lightButton = (Button) findViewById(R.id.light_button);
+
+        lightText = (EditText) findViewById(R.id.lightText);
 
         xPlusButton.setOnClickListener(this);
         yPlusButton.setOnClickListener(this);
@@ -125,6 +133,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         startSerialButton.setOnClickListener(this);
         homeAxisButton.setOnClickListener(this);
         stopSerialButton.setOnClickListener(this);
+        lightButton.setOnClickListener(this);
 
 
         //Camera preview
@@ -163,6 +172,15 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.X_plus:
                 serialBinder.moveAxisRel(10.0,0.0,2000.0);
+                break;
+            case R.id.light_button:
+                String s = lightText.getText().toString();
+                if(s == ""){
+                    break;
+                }
+                Integer value = Integer.parseInt(s);
+                Log.d(TAG,value.toString());
+                serialBinder.setLight(value);
                 break;
         }
     }
