@@ -50,7 +50,6 @@ public class SerialService extends Service {
     private UsbManager usbManager;
     private UsbSerialDevice serial;
     boolean connected;
-    boolean alarm = true;
 
     //this variable holds the position of the carriage.
     private double[] position = {0.0,0.0};
@@ -153,7 +152,6 @@ public class SerialService extends Service {
                 e.printStackTrace();
             }
 
-            alarm = true;
 
 
         }
@@ -209,7 +207,7 @@ public class SerialService extends Service {
                 //Log.d(TAG,"Homing axis");
                 serial.write("$h\r\n".getBytes());
                 position = new double[] {0.0,0.0};
-                alarm = false;
+
                 return 0;
             }else{
                 return -1;
@@ -222,7 +220,7 @@ public class SerialService extends Service {
             if(sanityCheck()){
                 serial.close();
                 connected = false;
-                alarm = true;
+
             }
 
         }
@@ -328,7 +326,7 @@ public class SerialService extends Service {
 
     private boolean sanityCheck(){
 
-        if(!connected || alarm){
+        if(!connected){
             Log.d(TAG,"Sanity check failed");
             return false;
         }else{
