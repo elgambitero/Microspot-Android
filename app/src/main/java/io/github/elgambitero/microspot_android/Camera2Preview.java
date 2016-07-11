@@ -66,9 +66,9 @@ public class Camera2Preview extends SurfaceView implements TextureView.SurfaceTe
         return safeToShoot;
     }
 
-    /*==========
-    *Constructor
-    ==========*/
+    /*===========
+    * Constructor
+    ===========*/
 
     public Camera2Preview(Context context, TextureView view) {
         super(context);
