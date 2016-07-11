@@ -107,6 +107,12 @@ public class SerialService extends Service {
 
     }
 
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(broadcastReceiver);
+        super.onDestroy();
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -187,7 +193,7 @@ public class SerialService extends Service {
                 serial.write("g91\r\n".getBytes());
                 String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
                 serial.write(command.getBytes());
-                
+
                 long waitTime = (long) (Math.sqrt(Math.pow(x,2)+Math.pow(y,2))/0.005);
                 position[0] += x;
                 position[1] += y;
