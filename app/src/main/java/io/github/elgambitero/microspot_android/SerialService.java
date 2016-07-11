@@ -159,8 +159,8 @@ public class SerialService extends Service {
         public long moveAxis(Double x, Double y, Double speed){
 
             //Saturate values not to go outside boundaries
-            x = Math.min(xMax,x);
-            y = Math.min(yMax,y);
+            x = Math.max(Math.min(xMax,x),0.0);
+            y = Math.max(Math.min(yMax,y),0.0);
 
             if(sanityCheck()){
                 //Log.d(TAG,"Moving axis to (" + x.toString() + "," + y.toString() + ")");
@@ -179,10 +179,10 @@ public class SerialService extends Service {
         public long moveAxisRel(Double x, Double y, Double speed){
 
             //Saturate the increment so the MicroSpot doesn't go outside boundaries.
-            x = Math.min(xMax,x + position[0]) - position[0];
-            y = Math.min(yMax,y + position[1]) - position[1];
+            x = Math.max(Math.min(xMax,x + position[0]),0.0) - position[0];
+            y = Math.max(Math.min(yMax,y + position[1]),0.0) - position[1];
 
-            if(x == 0 && y == 0){
+            if(x == 0.0 && y == 0.0){
                 return 0;
             }
 
