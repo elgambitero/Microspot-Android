@@ -40,6 +40,9 @@ public class SerialService extends Service {
 
     private final IBinder serialBinder = new SerialBinder();
 
+    private static double xMax = 50.0;
+    private static double yMax = 15.0;
+
     private String TAG = "SerialService";
 
     private UsbDevice device;
@@ -47,6 +50,9 @@ public class SerialService extends Service {
     private UsbManager usbManager;
     private UsbSerialDevice serial;
     boolean connected;
+
+    //this variable holds the position of the carriage.
+    private double[] position = {0.0,0.0};
 
     private String data = "";
 
@@ -100,6 +106,12 @@ public class SerialService extends Service {
 
     }
 
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(broadcastReceiver);
+        super.onDestroy();
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -140,17 +152,24 @@ public class SerialService extends Service {
                 e.printStackTrace();
             }
 
+
+
         }
 
-        public int moveAxis(Double x, Double y, Double speed){
+        public long moveAxis(Double x, Double y, Double speed){
+
+            //Saturate values not to go outside boundaries
+            x = Math.max(Math.min(xMax,x),0.0);
+            y = Math.max(Math.min(yMax,y),0.0);
 
             if(sanityCheck()){
                 //Log.d(TAG,"Moving axis to (" + x.toString() + "," + y.toString() + ")");
                 serial.write("g90\r\n".getBytes());
                 String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
                 serial.write(command.getBytes());
-                //Maybe check if something went wrong?
-                return 0;
+                long waitTime = (long) (Math.sqrt(Math.pow(x-position[0],2)+Math.pow(y-position[1],2))/0.005);
+                position = new double[] {x, y};
+                return waitTime;
             }else{
                 return -1;
             }
@@ -159,12 +178,23 @@ public class SerialService extends Service {
 
         public long moveAxisRel(Double x, Double y, Double speed){
 
+            //Saturate the increment so the MicroSpot doesn't go outside boundaries.
+            x = Math.max(Math.min(xMax,x + position[0]),0.0) - position[0];
+            y = Math.max(Math.min(yMax,y + position[1]),0.0) - position[1];
+
+            if(x == 0.0 && y == 0.0){
+                return 0;
+            }
+
             if(sanityCheck()){ //Check if something went wrong
                 //Log.d(TAG,"Moving axis by (" + x.toString() + "," + y.toString() + ")");
                 serial.write("g91\r\n".getBytes());
                 String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
                 serial.write(command.getBytes());
+
                 long waitTime = (long) (Math.sqrt(Math.pow(x,2)+Math.pow(y,2))/0.005);
+                position[0] += x;
+                position[1] += y;
                 return waitTime;
             }else{
                 return -1;
@@ -176,6 +206,8 @@ public class SerialService extends Service {
             if(sanityCheck()){ //Check if something went wrong
                 //Log.d(TAG,"Homing axis");
                 serial.write("$h\r\n".getBytes());
+                position = new double[] {0.0,0.0};
+
                 return 0;
             }else{
                 return -1;
@@ -188,6 +220,7 @@ public class SerialService extends Service {
             if(sanityCheck()){
                 serial.close();
                 connected = false;
+
             }
 
         }
