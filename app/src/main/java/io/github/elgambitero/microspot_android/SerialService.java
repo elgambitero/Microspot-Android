@@ -203,6 +203,7 @@ public class SerialService extends Service {
         }
 
         public int homeAxis(){
+            
             if(sanityCheck()){ //Check if something went wrong
                 //Log.d(TAG,"Homing axis");
                 serial.write("$h\r\n".getBytes());
@@ -226,6 +227,7 @@ public class SerialService extends Service {
         }
 
         public int setLight(Integer value){
+
             if(sanityCheck() && value <= 255 && value >=0){
                 String command = "S" + value.toString() + "\r\n";
                 serial.write("M03\r\n".getBytes());
@@ -234,6 +236,11 @@ public class SerialService extends Service {
             }else{
                 return -1;
             }
+
+        }
+
+        public double[] getPosition(){
+            return position;
         }
 
     }

@@ -18,7 +18,7 @@ public class ZigZag{
             for(int i = 0;j < shots[0]; i++){
 
                 Double[] coord = new Double[0];
-                
+
                 coord[0] = center[0] + isEven(j)*(i*spacing[0] - (spacing[0]*shots[0]/2));
                 coord[1] = center[1] + (j*spacing[1] - (spacing[1]*shots[1]/2));
 
