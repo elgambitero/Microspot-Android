@@ -1,6 +1,6 @@
 package Paths;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -8,30 +8,31 @@ import java.util.List;
  */
 public class ZigZag{
 
-    private ArrayList<Double[]> points;
+    private double[][] points;
 
-    public ZigZag(Double[] center, Double[] spacing, Integer[] shots){
+    public ZigZag(double[] center, double[] spacing, int[] shots){
 
-        points = new ArrayList<>();
+        points = new double[shots[0]*shots[1]][2];
 
         for(int j = 0; j < shots[1]; j++){
-            for(int i = 0;j < shots[0]; i++){
+            for(int i = 0; i < shots[0]; i++){
 
-                Double[] coord = new Double[0];
+                double[] coord = new double[2];
 
-                coord[0] = center[0] + isEven(j)*(i*spacing[0] - (spacing[0]*shots[0]/2));
-                coord[1] = center[1] + (j*spacing[1] - (spacing[1]*shots[1]/2));
+                coord[0] = center[0] + isEven(j)*(i*spacing[0] - ( spacing[0]*(shots[0] - 1)/2 ) ) ;
+                coord[1] = center[1] + (j*spacing[1] - ( spacing[1]*(shots[1] - 1)/2 ) ) ;
 
-                points.add(coord);
+                points[j*shots[0] + i][0] = coord[0];
+                points[j*shots[0] + i][1] = coord[1];
 
             }
         }
 
     }
 
-    public List<Double[]> getPath(){
+    public List<double[]> getPath(){
 
-        return points;
+        return Arrays.asList(points);
 
     }
 
@@ -42,4 +43,5 @@ public class ZigZag{
             return -1;
         }
     }
+
 }
