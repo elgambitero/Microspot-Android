@@ -181,6 +181,8 @@ public class SerialService extends Service {
             //Saturate the increment so the MicroSpot doesn't go outside boundaries.
             Double xAbs = Math.max(Math.min(xMax,x + position[0]),0.0);
             Double yAbs = Math.max(Math.min(yMax,y + position[1]),0.0) ;
+            x = xAbs - position[0];
+            y = yAbs - position[1];
 
             if(sanityCheck()){ //Check if something went wrong
                 //Log.d(TAG,"Moving axis by (" + x.toString() + "," + y.toString() + ")");
