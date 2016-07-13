@@ -179,17 +179,15 @@ public class SerialService extends Service {
         public long moveAxisRel(Double x, Double y, Double speed){
 
             //Saturate the increment so the MicroSpot doesn't go outside boundaries.
-            x = Math.max(Math.min(xMax,x + position[0]),0.0) - position[0];
-            y = Math.max(Math.min(yMax,y + position[1]),0.0) - position[1];
-
-            if(x == 0.0 && y == 0.0){
-                return 0;
-            }
+            Double xAbs = Math.max(Math.min(xMax,x + position[0]),0.0);
+            Double yAbs = Math.max(Math.min(yMax,y + position[1]),0.0) ;
+            x = xAbs - position[0];
+            y = yAbs - position[1];
 
             if(sanityCheck()){ //Check if something went wrong
                 //Log.d(TAG,"Moving axis by (" + x.toString() + "," + y.toString() + ")");
-                serial.write("g91\r\n".getBytes());
-                String command = "g1 x" + x.toString() + " y" + y.toString() + " f" + speed.toString() + "\r\n";
+                serial.write("g90\r\n".getBytes());
+                String command = "g1 x" + xAbs.toString() + " y" + yAbs.toString() + " f" + speed.toString() + "\r\n";
                 serial.write(command.getBytes());
 
                 long waitTime = (long) (Math.sqrt(Math.pow(x,2)+Math.pow(y,2))/0.005);
@@ -203,6 +201,7 @@ public class SerialService extends Service {
         }
 
         public int homeAxis(){
+
             if(sanityCheck()){ //Check if something went wrong
                 //Log.d(TAG,"Homing axis");
                 serial.write("$h\r\n".getBytes());
@@ -226,6 +225,7 @@ public class SerialService extends Service {
         }
 
         public int setLight(Integer value){
+
             if(sanityCheck() && value <= 255 && value >=0){
                 String command = "S" + value.toString() + "\r\n";
                 serial.write("M03\r\n".getBytes());
@@ -234,6 +234,11 @@ public class SerialService extends Service {
             }else{
                 return -1;
             }
+
+        }
+
+        public double[] getPosition(){
+            return position;
         }
 
     }
